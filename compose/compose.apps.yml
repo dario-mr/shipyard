@@ -12,18 +12,18 @@ services:
       timeout: 5s
       retries: 3
 
-#  api-stress-test:
-#    image: dariomr8/api-stress-test:latest
-#    restart: unless-stopped
-#    expose:
-#      - "8083"
-#    networks:
-#      - backend
-#    environment:
-#      DB_PASSWORD: "${DB_PASSWORD}"
-#      OAUTH_CLIENT_ID: "${OAUTH_CLIENT_ID}"
-#      OAUTH_CLIENT_SECRET: "${OAUTH_CLIENT_SECRET}"
-#      ENCRYPTION_KEY: "${ENCRYPTION_KEY}"
+  api-stress-test:
+    image: dariomr8/api-stress-test:latest
+    restart: unless-stopped
+    expose:
+      - "8083"
+    networks:
+      - backend
+    environment:
+      DB_PASSWORD: "${DB_PASSWORD}"
+      OAUTH_CLIENT_ID: "${OAUTH_CLIENT_ID}"
+      OAUTH_CLIENT_SECRET: "${OAUTH_CLIENT_SECRET}"
+      ENCRYPTION_KEY: "${ENCRYPTION_KEY}"
 
   ichiro-family-tree:
     image: dariomr8/ichiro:latest
