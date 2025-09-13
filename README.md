@@ -1,15 +1,30 @@
 # shipyard
+
 Infrastructure-as-code for my self-hosted stack (Docker Compose + Caddy).
+
+Caddy reverse proxy at the edge, Spring Cloud Gateway in the middle, observability and hardening
+around it.
+
+## Architecture
+
+```plaintext
+Internet
+   │
+   ▼      
+ Caddy ──▶ Gateway ───▶ Backends
+   │
+   ├─────▶ Promtail ──▶ Loki ──▶ Grafana (access logs)
+   └─────▶ fail2ban
+```
 
 ## Components
 
-- **Caddy**: automatic HTTP → HTTPS redirect, rate limiting, security headers, reverse-proxy to
-  Gateway.
-- **Gateway**: Spring Cloud Gateway that routes requests to the right upstream apps.
-- **fail2ban**: watches caddy logs for bad behavior patterns and then blocks the IP at firewall
-  level.
-- **Watchtower**: automatically pull new docker images.
-- **Portainer**: dashboard to manage docker containers. Served under `/portainer/`.
+- **Caddy**: HTTPS, rate limiting, security headers, reverse proxy to `Gateway`.
+- **Gateway**: Spring Cloud Gateway (separate repo: [apigw](https://github.com/dario-mr/apigw)) that
+  routes to upstream apps.
+- **fail2ban**: watches Caddy logs and bans offenders at firewall level.
+- **Watchtower**: auto-pull updated docker images.
+- **Portainer**: Docker UI, served under `/portainer/`.
 - **Observability**:
     - **Promtail**: tails Caddy's access logs, parses fields, enriches with GeoIP data, and ships to
       Loki. The GeoIP DB is automatically updated by the `geoipupdate` service.
@@ -17,27 +32,29 @@ Infrastructure-as-code for my self-hosted stack (Docker Compose + Caddy).
     - **Grafana**: dashboards querying Loki for access logs. Served under `/grafana/`.
 - **Backends**: `api-stress-test`, `ichiro-family-tree`, etc.
 
+## Pre-requisites
+
+- A domain name pointing to the server's IP (for TLS/Let’s Encrypt).
+- A server with Docker and Docker Compose installed.
+
 ## How to run
 
-1. Make sure your domain (e.g. `dariolab.com`) is pointing to your server's IP.
-2. Copy [.env.example](.env.example) to `.env` and edit the variables as needed.
-3. (Optional) Edit the config files if needed:
-    - [docker-compose.yml](docker-compose.yml): orchestrates the whole stack (Caddy, gateway, and
-      backend services), networking, and volume persistence.
-    - [Caddyfile](caddy/Caddyfile): defines the public domain, TLS/Let’s Encrypt setup, rate limits,
-      security headers, and
-      reverse-proxy rules into the gateway.
-      prefixes, forwarding logic, and upstream service addresses.
-    - [ban rules](fail2ban/jail.d/caddy.local): configures IP banning rules.
+```shell
+# 1. Copy & edit env file
+cp .env.example .env
+# edit values
 
-4. Start everything:
-   ```shell
-   docker compose up -d --build
-   ```
+# 2. Bring the stack up
+docker compose up -d --build
+
+# 3. Verify
+docker compose ps
+docker compose logs -f caddy
+```
 
 ## Caddy image
 
-The app uses a custom caddy image that includes the `caddy-ratelimit` plugin. It is hosted in
+Caddy uses a custom image that includes the `caddy-ratelimit` plugin. It is hosted in
 my [docker hub](https://hub.docker.com/repository/docker/dariomr8/caddy-with-ratelimit/general).
 
 It is built from the [Dockerfile.caddy](caddy/Dockerfile.caddy).
@@ -47,6 +64,7 @@ To update the image after editing the Dockerfile:
 ```shell
 docker login docker.io
 
+cd caddy
 docker buildx build \
   --platform linux/arm64 \
   -t docker.io/dariomr8/caddy-with-ratelimit:2.10.0 \
@@ -55,12 +73,6 @@ docker buildx build \
 ```
 
 ## Useful commands
-
-### Logs
-
-```shell
-docker compose logs -f caddy gateway
-```
 
 ### Recreate containers
 
@@ -92,7 +104,9 @@ caddy fmt --overwrite
 docker compose exec caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
 ```
 
-#### filter access logs by 404, grouped by IP and path
+### Caddy access log helpers
+
+#### 404s grouped by IP and path
 
 ```shell
 docker compose exec caddy cat /var/log/caddy/access.log \
@@ -106,7 +120,7 @@ docker compose exec caddy cat /var/log/caddy/access.log \
     }'
 ```
 
-#### filter access logs by 404, sorted by number of hits
+#### 404s sorted by hits
 
 ```shell
 docker compose exec caddy cat /var/log/caddy/access.log \
@@ -115,7 +129,7 @@ docker compose exec caddy cat /var/log/caddy/access.log \
   | sort -t $'\t' -k1,1nr
 ```
 
-#### filter access logs by 429
+#### 429s
 
 ```shell
 docker compose exec caddy cat /var/log/caddy/access.log | jq -r 'select(.status == 429) | .request.uri'
