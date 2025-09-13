@@ -1,0 +1,56 @@
+services:
+  lab-home:
+    image: dariomr8/lab-home:latest
+    restart: unless-stopped
+    expose:
+      - "80"
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:80" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+#  api-stress-test:
+#    image: dariomr8/api-stress-test:latest
+#    restart: unless-stopped
+#    expose:
+#      - "8083"
+#    networks:
+#      - backend
+#    environment:
+#      DB_PASSWORD: "${DB_PASSWORD}"
+#      OAUTH_CLIENT_ID: "${OAUTH_CLIENT_ID}"
+#      OAUTH_CLIENT_SECRET: "${OAUTH_CLIENT_SECRET}"
+#      ENCRYPTION_KEY: "${ENCRYPTION_KEY}"
+
+  ichiro-family-tree:
+    image: dariomr8/ichiro:latest
+    restart: unless-stopped
+    expose:
+      - "8081"
+    networks:
+      - backend
+    environment:
+      DB_PASSWORD: "${DB_PASSWORD}"
+
+  shortly:
+    image: dariomr8/shortly:latest
+    restart: unless-stopped
+    expose:
+      - "8082"
+    networks:
+      - backend
+    environment:
+      DB_PASSWORD: "${DB_PASSWORD}"
+
+  ichiro-walks:
+    image: dariomr8/ichiro-walks:latest
+    restart: unless-stopped
+    expose:
+      - "8085"
+    networks:
+      - backend
+    environment:
+      DB_PASSWORD: "${DB_PASSWORD}"

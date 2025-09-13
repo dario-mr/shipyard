@@ -1,0 +1,20 @@
+services:
+  portainer:
+    image: portainer/portainer-ce:2.33.1
+    restart: unless-stopped
+    command:
+      - --http-enabled
+      - --base-url
+      - /portainer
+      - --trusted-origins
+      - ${DOMAIN},www.${DOMAIN}
+    expose:
+      - "9000"
+    networks:
+      - backend
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    security_opt:
+      - no-new-privileges:true
+    read_only: true

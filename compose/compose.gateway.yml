@@ -1,0 +1,15 @@
+services:
+  gateway:
+    image: dariomr8/apigw:latest
+    restart: unless-stopped
+    networks:
+      - backend
+    expose:
+      - "8080"
+    depends_on:
+      - lab-home
+      - api-stress-test
+      - ichiro-family-tree
+      - shortly
+      - ichiro-walks
+    read_only: true

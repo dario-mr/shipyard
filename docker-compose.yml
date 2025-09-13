@@ -1,0 +1,23 @@
+name: dariolab
+
+include:
+  - compose/compose.caddy.yml
+  - compose/compose.watchtower.yml
+  - compose/compose.portainer.yml
+  - compose/compose.gateway.yml
+  - compose/compose.apps.yml
+  - compose/compose.fail2ban.yml
+  - compose/compose.grafana.yml
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:
+  portainer_data:
+  loki_data:
+  grafana_data:
+  promtail_pos:
+  geoipupdate_data:
