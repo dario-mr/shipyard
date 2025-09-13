@@ -1,0 +1,59 @@
+{
+	order rate_limit before reverse_proxy
+}
+
+{$DOMAIN}, www.{$DOMAIN} {
+	log {
+		output file /var/log/caddy/access.log {
+			roll_size 10MiB
+			roll_keep 10
+		}
+		format json
+	}
+
+	header {
+		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+		X-Frame-Options "DENY"
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+
+	# Allowed paths
+	@allowed {
+		path / /index.html /favicon.ico
+		path /assets/* /static/* /icons/* /locales/*
+		path /robots.txt /sitemap.xml /manifest.json /site.webmanifest
+		path /apple-touch-icon*.png /.well-known/acme-challenge/*
+		path /api-stress-test/* /ichiro-family-tree/* /shortly/* /ichiro-walks/* /portainer/* /grafana/*
+	}
+
+	# Allowed → rate limit, then route to the right upstream
+	handle @allowed {
+		rate_limit {
+			# Global limit
+			zone per_ip_global {
+				key {remote_host}
+				events 100
+				window 10s
+			}
+
+			# App paths (stricter)
+			zone per_ip_app {
+				match {
+					path /api-stress-test/* /ichiro-family-tree/* /shortly/* /ichiro-walks/* /portainer/*
+				}
+				key {remote_host}
+				events 50
+				window 10s
+			}
+		}
+
+		reverse_proxy gateway:8080
+	}
+
+	# Everything else → 404
+	handle {
+		header X-Unknown-Path "1"
+		respond 404
+	}
+}

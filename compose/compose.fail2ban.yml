@@ -1,0 +1,21 @@
+services:
+  fail2ban:
+    image: crazymax/fail2ban:1.1.0
+    restart: unless-stopped
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    environment:
+      TZ: ${TIMEZONE}
+      F2B_LOG_TARGET: STDOUT
+      F2B_LOG_LEVEL: INFO
+      IPTABLES_MODE: auto
+    volumes:
+      - ./fail2ban:/data
+      - /var/log/caddy:/var/log/caddy:ro
+    healthcheck:
+      test: [ "CMD", "fail2ban-client", "ping" ]
+      interval: 60s
+      timeout: 10s
+      retries: 3

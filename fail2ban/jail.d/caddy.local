@@ -1,0 +1,37 @@
+# Repeat offenders are banned for increasingly longer periods
+[DEFAULT]
+bantime.increment = true
+bantime.factor    = 2
+bantime.formula   = bantime * (factor ** (failures - 1))
+bantime.maxtime   = 4w
+dbpurgeage        = 12w
+usedns            = warn
+banaction         = iptables-multiport
+action            = %(banaction)s[name=%(__name__)s, port="80,443", protocol=tcp, chain=DOCKER-USER]
+
+# Ban IPs that hit too many 429s quickly
+[caddy-429]
+enabled  = true
+filter   = caddy-429
+logpath  = /var/log/caddy/access.log
+maxretry = 20
+findtime = 1m
+bantime  = 1h
+
+# Ban common scanners/probers
+[caddy-badpaths]
+enabled  = true
+filter   = caddy-badpaths
+logpath  = /var/log/caddy/access.log
+maxretry = 1
+findtime = 10m
+bantime  = 24h
+
+# Ban IPs that request non-allowed paths
+[caddy-unknownpaths]
+enabled  = true
+filter   = caddy-unknownpaths
+logpath  = /var/log/caddy/access.log
+maxretry = 5
+findtime = 5m
+bantime  = 1h
