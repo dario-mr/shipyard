@@ -12,7 +12,7 @@ services:
       F2B_LOG_LEVEL: INFO
       IPTABLES_MODE: auto
     volumes:
-      - ./fail2ban:/data
+      - ../fail2ban:/data
       - /var/log/caddy:/var/log/caddy:ro
     healthcheck:
       test: [ "CMD", "fail2ban-client", "ping" ]

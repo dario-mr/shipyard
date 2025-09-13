@@ -4,7 +4,7 @@ services:
     restart: unless-stopped
     command: -config.file=/etc/loki/local-config.yaml
     volumes:
-      - ./grafana/loki/local-config.yaml:/etc/loki/local-config.yaml:ro
+      - ../grafana/loki/local-config.yaml:/etc/loki/local-config.yaml:ro
       - loki_data:/loki
     networks: [ backend ]
     healthcheck:
@@ -23,7 +23,7 @@ services:
     environment:
       DOMAIN: ${DOMAIN}
     volumes:
-      - ./grafana/promtail/config.yml:/etc/promtail/config.yml:ro
+      - ../grafana/promtail/config.yml:/etc/promtail/config.yml:ro
       - /var/log/caddy:/var/log/caddy:ro
       - promtail_pos:/var/lib/promtail
       - geoipupdate_data:/usr/share/GeoIP:ro
@@ -42,7 +42,7 @@ services:
     networks: [ backend ]
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../grafana/provisioning:/etc/grafana/provisioning:ro
     healthcheck:
       test: [ "CMD", "wget", "-qO-", "http://localhost:3000/api/health" ]
       interval: 30s
