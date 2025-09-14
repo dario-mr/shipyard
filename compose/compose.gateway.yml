@@ -1,6 +1,10 @@
 services:
   gateway:
     image: dariomr8/apigw:latest
+    labels:
+      - loki=true
+      - logfmt=json
+      - app=apigw
     restart: unless-stopped
     networks:
       - backend
