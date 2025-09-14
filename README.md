@@ -8,13 +8,10 @@ around it.
 ## Architecture
 
 ```plaintext
-Internet
-   │
-   ▼      
- Caddy ──▶ Gateway ───▶ Backends
-   │
-   ├─────▶ Promtail ──▶ Loki ──▶ Grafana (access logs)
-   └─────▶ fail2ban
+ Internet ──▶ Caddy ──▶ Gateway ───▶ Backends
+                │
+                ├─────▶ Promtail ──▶ Loki ──▶ Grafana (access & application logs)
+                └─────▶ fail2ban
 ```
 
 ## Components
@@ -26,10 +23,10 @@ Internet
 - **Watchtower**: auto-pull updated docker images.
 - **Portainer**: Docker UI, served under `/portainer/`.
 - **Observability**:
-    - **Promtail**: tails Caddy's access logs, parses fields, enriches with GeoIP data, and ships to
-      Loki. The GeoIP DB is automatically updated by the `geoipupdate` service.
+    - **Promtail**: agent shipping Caddy and application logs to Loki.
     - **Loki**: log database storing the ingested logs.
-    - **Grafana**: dashboards querying Loki for access logs. Served under `/grafana/`.
+    - **Grafana**: dashboards querying Loki for access and application logs. Served under
+      `/grafana/`.
 - **Backends**: `api-stress-test`, `ichiro-family-tree`, etc.
 
 ## Pre-requisites
