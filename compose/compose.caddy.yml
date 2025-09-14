@@ -4,6 +4,7 @@ services:
     labels:
       - loki=true
       - app=caddy
+      - logfmt=json
     restart: unless-stopped
     ports:
       - "80:80"
