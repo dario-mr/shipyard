@@ -1,6 +1,9 @@
 services:
   caddy:
     image: dariomr8/caddy-with-ratelimit:2.10.0
+    labels:
+      - loki=true
+      - app=caddy
     restart: unless-stopped
     ports:
       - "80:80"

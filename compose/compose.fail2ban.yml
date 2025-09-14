@@ -1,6 +1,9 @@
 services:
   fail2ban:
     image: crazymax/fail2ban:1.1.0
+    labels:
+      - loki=true
+      - app=fail2ban
     restart: unless-stopped
     network_mode: host
     cap_add:
