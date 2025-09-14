@@ -1,6 +1,9 @@
 services:
   loki:
     image: grafana/loki:2.9.4
+    labels:
+      - loki=true
+      - app=loki
     restart: unless-stopped
     command: -config.file=/etc/loki/local-config.yaml
     volumes:
@@ -16,6 +19,9 @@ services:
 
   promtail:
     image: grafana/promtail:2.9.4
+    labels:
+      - loki=true
+      - app=promtail
     restart: unless-stopped
     command:
       - -config.file=/etc/promtail/config.yml
@@ -27,12 +33,17 @@ services:
       - /var/log/caddy:/var/log/caddy:ro
       - promtail_pos:/var/lib/promtail
       - geoipupdate_data:/usr/share/GeoIP:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     networks: [ backend ]
     depends_on: [ loki, geoipupdate ]
     read_only: true
 
   grafana:
     image: grafana/grafana:10.4.5
+    labels:
+      - loki=true
+      - app=grafana
     restart: unless-stopped
     environment:
       GF_SECURITY_ADMIN_USER: admin
@@ -52,6 +63,9 @@ services:
 
   geoipupdate:
     image: ghcr.io/maxmind/geoipupdate:v7.1.1
+    labels:
+      - loki=true
+      - app=geoipupdate
     restart: unless-stopped
     environment:
       GEOIPUPDATE_ACCOUNT_ID: ${GEOIPUPDATE_ACCOUNT_ID}

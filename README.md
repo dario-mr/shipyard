@@ -40,14 +40,17 @@ Internet
 ## How to run
 
 ```shell
-# 1. Copy & edit env file
+# 1. (Optional) Setup docker logging driver to use json-file with log rotation
+./scripts/setup-docker-logging.sh
+
+# 2. Copy & edit env file
 cp .env.example .env
 # edit values
 
-# 2. Bring the stack up
+# 3. Bring the stack up
 docker compose up -d --build
 
-# 3. Verify
+# 4. Verify
 docker compose ps
 docker compose logs -f caddy
 ```

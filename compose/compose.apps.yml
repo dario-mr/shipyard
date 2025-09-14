@@ -24,6 +24,10 @@ services:
       OAUTH_CLIENT_ID: "${OAUTH_CLIENT_ID}"
       OAUTH_CLIENT_SECRET: "${OAUTH_CLIENT_SECRET}"
       ENCRYPTION_KEY: "${ENCRYPTION_KEY}"
+    labels:
+      - loki=true
+      - logfmt=json
+      - app=api-stress-test
 
   ichiro-family-tree:
     image: dariomr8/ichiro:latest
@@ -34,6 +38,10 @@ services:
       - backend
     environment:
       DB_PASSWORD: "${DB_PASSWORD}"
+    labels:
+      - loki=true
+      - logfmt=json
+      - app=ichiro-family-tree
 
   shortly:
     image: dariomr8/shortly:latest
@@ -44,6 +52,10 @@ services:
       - backend
     environment:
       DB_PASSWORD: "${DB_PASSWORD}"
+    labels:
+      - loki=true
+      - logfmt=json
+      - app=shortly
 
   ichiro-walks:
     image: dariomr8/ichiro-walks:latest
@@ -54,3 +66,7 @@ services:
       - backend
     environment:
       DB_PASSWORD: "${DB_PASSWORD}"
+    labels:
+      - loki=true
+      - logfmt=json
+      - app=ichiro-walks
