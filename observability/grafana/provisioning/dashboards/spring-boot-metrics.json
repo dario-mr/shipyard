@@ -364,7 +364,7 @@
       "options": {
         "legend": {
           "calcs": [],
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "right",
           "showLegend": true
         },
@@ -957,7 +957,7 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
+        "w": 17,
         "x": 0,
         "y": 41
       },
@@ -990,6 +990,73 @@
       ],
       "title": "CPU usage",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 7,
+        "x": 17,
+        "y": 41
+      },
+      "id": 46,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "10.4.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "max(system_cpu_count{application=\"$app\"})",
+          "legendFormat": "CPU usage",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "CPU count",
+      "type": "gauge"
     },
     {
       "collapsed": false,
@@ -3183,7 +3250,7 @@
     "list": [
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "api-stress-test",
           "value": "api-stress-test"
         },
@@ -3300,6 +3367,6 @@
   "timezone": "browser",
   "title": "Spring Boot metrics",
   "uid": "spring-boot-metrics",
-  "version": 20,
+  "version": 23,
   "weekStart": ""
 }

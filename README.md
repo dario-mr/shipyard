@@ -8,10 +8,17 @@ around it.
 ## Architecture
 
 ```plaintext
- Internet ──▶ Caddy ──▶ Gateway ───▶ Backends
-                │
-                ├─────▶ Promtail ──▶ Loki ──▶ Grafana (access & application logs)
-                └─────▶ fail2ban
+Internet ──▶ Caddy ──▶ Gateway ───▶ Backends
+               │
+               │
+               ├─────▶ Promtail ──▶ Loki ────┐
+               │        (logs)               │
+               │                             ├───▶ Grafana
+               │                             │
+               ├─────▶ Prometheus ───────────┘
+               │       (metrics)
+               │
+               └─────▶ fail2ban
 ```
 
 ## Components
@@ -20,12 +27,15 @@ around it.
 - **Gateway**: Spring Cloud Gateway (separate repo: [apigw](https://github.com/dario-mr/apigw)) that
   routes to upstream apps.
 - **fail2ban**: watches Caddy logs and bans offenders at firewall level.
-- **Watchtower**: auto-pull updated docker images.
+- **Watchtower**: auto-pull the latest docker images.
 - **Portainer**: Docker UI, served under `/portainer/`.
 - **Observability**:
-    - **Promtail**: agent shipping Caddy and application logs to Loki.
-    - **Loki**: log database storing the ingested logs.
-    - **Grafana**: dashboards querying Loki for access and application logs. Served under
+    - **Promtail**: ships Caddy and application logs to Loki.
+    - **Loki**: log database queried by Grafana.
+    - **Prometheus**: scrapes metrics from:
+        - Spring Boot apps
+        - Prometheus itself, Loki, and Promtail
+    - **Grafana**: dashboards for **logs** (Loki) and **metrics** (Prometheus), served under
       `/grafana/`.
 - **Backends**: `api-stress-test`, `ichiro-family-tree`, etc.
 

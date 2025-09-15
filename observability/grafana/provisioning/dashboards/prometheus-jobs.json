@@ -631,7 +631,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -727,7 +728,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -792,6 +794,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Current number of active time series in Prometheus’s in-memory TSDB “head”. It’s a direct proxy for label cardinality and memory load; sudden jumps often mean a cardinality explosion.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -877,16 +880,109 @@
           "refId": "A"
         }
       ],
-      "title": "Prometheus TSDB head series",
+      "title": "Prometheus TSDB active series",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "How fast the number of time series in Prometheus’s in-memory head is changing.\nPositive = series count growing (potential cardinality increase).\nNegative = shrinking (series churn/cleanup or restart). \nNear zero = stable.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 34
+      },
+      "id": 14,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(prometheus_tsdb_head_series[5m])",
+          "legendFormat": "series/s",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Change in active series",
       "type": "timeseries"
     }
   ],
   "schemaVersion": 39,
   "tags": [
     "infra",
-    "prometheus",
-    "loki",
-    "promtail"
+    "prometheus"
   ],
   "templating": {
     "list": [
@@ -946,6 +1042,6 @@
   "timezone": "",
   "title": "Prometheus Jobs",
   "uid": "prometheus-jobs",
-  "version": 10,
+  "version": 13,
   "weekStart": ""
 }

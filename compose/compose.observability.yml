@@ -5,9 +5,9 @@ services:
       - loki=true
       - app=loki
     restart: unless-stopped
-    command: -config.file=/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/loki.yml
     volumes:
-      - ../grafana/loki/local-config.yaml:/etc/loki/local-config.yaml:ro
+      - ../observability/loki/loki.yml:/etc/loki/loki.yml:ro
       - loki_data:/loki
     networks: [ backend ]
     healthcheck:
@@ -24,12 +24,12 @@ services:
       - app=promtail
     restart: unless-stopped
     command:
-      - -config.file=/etc/promtail/config.yml
+      - -config.file=/etc/promtail/promtail.yml
       - -config.expand-env=true
     environment:
       DOMAIN: ${DOMAIN}
     volumes:
-      - ../grafana/promtail/config.yml:/etc/promtail/config.yml:ro
+      - ../observability/promtail/promtail.yml:/etc/promtail/promtail.yml:ro
       - /var/log/caddy:/var/log/caddy:ro
       - promtail_pos:/var/lib/promtail
       - geoipupdate_data:/usr/share/GeoIP:ro
@@ -53,7 +53,7 @@ services:
     networks: [ backend ]
     volumes:
       - grafana_data:/var/lib/grafana
-      - ../grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../observability/grafana/provisioning:/etc/grafana/provisioning:ro
     healthcheck:
       test: [ "CMD", "wget", "-qO-", "http://localhost:3000/api/health" ]
       interval: 30s
@@ -93,7 +93,7 @@ services:
       - --storage.tsdb.retention.time=30d
     networks: [ backend ]
     volumes:
-      - ../grafana/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
     healthcheck:
       test: [ "CMD", "wget", "-qO-", "http://localhost:9090/-/ready" ]
