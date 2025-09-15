@@ -1,8 +1,9 @@
 apiVersion: 1
 providers:
-  - name: 'spring-boot'
+  - name: dashboards
     type: file
-    disableDeletion: false
     allowUiUpdates: true
+    disableDeletion: false
+    updateIntervalSeconds: 10
     options:
       path: /etc/grafana/provisioning/dashboards

@@ -37,7 +37,7 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "loki"
       },
       "fieldConfig": {
         "defaults": {
@@ -120,7 +120,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "loki"
           },
           "editorMode": "code",
           "expr": "sum by (geoip_country_name) (\n  count_over_time({job=\"caddy_access\", host=~\"$host\", geoip_country_name=~\".+\"}[$__range])\n)\nor\nlabel_replace(\n  sum(\n    count_over_time({job=\"caddy_access\", host=~\"$host\", geoip_country_name!~\".+\"}[$__range])\n  ),\n  \"geoip_country_name\", \"Unknown\", \"job\", \".*\"\n)",
@@ -135,7 +135,7 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "loki"
       },
       "fieldConfig": {
         "defaults": {
@@ -219,7 +219,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "loki"
           },
           "editorMode": "code",
           "expr": "sum by (geoip_city_name) (\n  count_over_time({job=\"caddy_access\", host=~\"$host\", geoip_city_name=~\".+\"}[$__range])\n)\nor\nlabel_replace(\n  sum(\n    count_over_time({job=\"caddy_access\", host=~\"$host\", geoip_city_name!~\".+\"}[$__range])\n  ),\n  \"geoip_city_name\", \"Unknown\", \"job\", \".*\"\n)",
@@ -234,7 +234,7 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "loki"
       },
       "fieldConfig": {
         "defaults": {
@@ -285,7 +285,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "loki"
           },
           "editorMode": "code",
           "expr": "topk(10,\n  sum by (ip) (\n    count_over_time(\n      {job=\"caddy_access\", host=~\"$host\"}\n      | json\n      | label_format ip=`{{ .request_remote_ip }}`\n      [$__range]\n    )\n  )\n)",
@@ -315,7 +315,7 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "loki"
       },
       "fieldConfig": {
         "defaults": {
@@ -366,7 +366,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "loki"
           },
           "editorMode": "code",
           "expr": "topk(\n  10,\n  sum by (uri) (\n    count_over_time(\n      {job=\"caddy_access\", host=~\"$host\"}\n      | json\n      | label_format uri=`{{ .request_uri }}`\n      [$__range]\n    )\n  )\n)",
@@ -397,7 +397,7 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "loki"
       },
       "fieldConfig": {
         "defaults": {
@@ -481,7 +481,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "loki"
           },
           "editorMode": "code",
           "expr": "count( sum by (ip) (\n  count_over_time({job=\"caddy_access\", host=~\"$host\"} | json | label_format ip=`{{ .request_remote_ip }}` [$__range])\n))",
@@ -509,7 +509,7 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "loki"
       },
       "fieldConfig": {
         "defaults": {
@@ -554,8 +554,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -589,7 +588,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "loki"
           },
           "editorMode": "code",
           "expr": "sum(rate({job=\"caddy_access\", host=~\"$host\"}[1m]))",
@@ -603,7 +602,7 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "loki"
       },
       "fieldConfig": {
         "defaults": {
@@ -651,8 +650,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -686,7 +684,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "loki"
           },
           "editorMode": "code",
           "expr": "sum by (status) (\n  rate({job=\"caddy_access\", host=~\"$host\"} | json | label_format status=`{{ .status }}` [1m])\n)",
@@ -714,7 +712,7 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "loki"
       },
       "fieldConfig": {
         "defaults": {
@@ -758,8 +756,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -794,7 +791,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "loki"
           },
           "editorMode": "code",
           "expr": "quantile_over_time(\n  0.95,\n  {job=\"caddy_access\", host=~\"$host\"}\n  | json\n  | status != 101\n  | unwrap duration [5m]\n)",
@@ -809,7 +806,7 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "loki"
       },
       "fieldConfig": {
         "defaults": {
@@ -853,8 +850,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -889,7 +885,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "loki"
           },
           "editorMode": "code",
           "expr": "sum(\n  sum_over_time(\n    {job=\"caddy_access\", host=~\"$host\"} | json | unwrap size [1m]\n  )\n) / 60",
@@ -916,7 +912,7 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "loki"
       },
       "gridPos": {
         "h": 11,
@@ -939,7 +935,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "loki"
           },
           "editorMode": "code",
           "expr": "{job=\"caddy_access\", host=~\"$host\", status=~\"4..|5..\"}",
@@ -973,7 +969,7 @@
         },
         "datasource": {
           "type": "loki",
-          "uid": "P8E80F9AEF21F6940"
+          "uid": "loki"
         },
         "definition": "label_values({job=\"caddy_access\"}, host)",
         "hide": 0,
@@ -992,13 +988,13 @@
     ]
   },
   "time": {
-    "from": "now-24h",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Caddy Overview",
   "uid": "caddy-overview",
-  "version": 29,
+  "version": 34,
   "weekStart": ""
 }
