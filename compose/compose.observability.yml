@@ -17,28 +17,6 @@ services:
       retries: 3
     read_only: true
 
-  #  promtail:
-  #    image: grafana/promtail:2.9.4
-  #    labels:
-  #      - loki=true
-  #      - app=promtail
-  #    restart: unless-stopped
-  #    command:
-  #      - -config.file=/etc/promtail/promtail.yml
-  #      - -config.expand-env=true
-  #    environment:
-  #      DOMAIN: ${DOMAIN}
-  #    volumes:
-  #      - ../observability/promtail/promtail.yml:/etc/promtail/promtail.yml:ro
-  #      - /var/log/caddy:/var/log/caddy:ro
-  #      - promtail_pos:/var/lib/promtail
-  #      - geoipupdate_data:/usr/share/GeoIP:ro
-  #      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-  #      - /var/run/docker.sock:/var/run/docker.sock:ro
-  #    networks: [ backend ]
-  #    depends_on: [ loki, geoipupdate ]
-  #    read_only: true
-
   alloy:
     image: grafana/alloy:v1.10.2
     labels:
