@@ -7,18 +7,35 @@ around it.
 
 ## Architecture
 
-```plaintext
-Internet ──▶ Caddy ──▶ Gateway ───▶ Backends
-               │
-               │
-               ├─────▶ Promtail ──▶ Loki ────┐
-               │        (logs)               │
-               │                             ├───▶ Grafana
-               │                             │
-               ├─────▶ Prometheus ───────────┘
-               │       (metrics)
-               │
-               └─────▶ fail2ban
+```mermaid
+%%{init: { "securityLevel": "loose", "flowchart": { "htmlLabels": true, "curve": "basis" } }}%%
+flowchart LR
+    Internet["Internet"]
+    Caddy["Caddy<br/><span style='font-size:12px'>reverse proxy</span>"]
+    Gateway["Gateway<br/><span style='font-size:12px'>routing</span>"]
+    Backends["Backends<br/><span style='font-size:12px'>apps & services</span>"]
+    fail2ban["fail2ban<br/><span style='font-size:12px'>ban offenders</span>"]
+    Promtail["Promtail<br/><span style='font-size:12px'>log shipper</span>"]
+    Loki["Loki<br/><span style='font-size:12px'>log database</span>"]
+    Prometheus["Prometheus<br/><span style='font-size:12px'>metrics scraper</span>"]
+    Grafana["Grafana<br/><span style='font-size:12px'>dashboards</span>"]
+
+    subgraph Core
+        direction LR
+        Caddy --> Gateway --> Backends
+        Caddy --> fail2ban
+    end
+
+    subgraph Observability
+        direction LR
+        Promtail --> Loki --> Grafana
+        Prometheus -->|scrapes| Backends
+        Prometheus --> Grafana
+    end
+
+%% Connections across subgraphs
+    Internet --> Caddy
+    Promtail -->|read logs| Caddy
 ```
 
 ## Components
@@ -30,7 +47,8 @@ Internet ──▶ Caddy ──▶ Gateway ───▶ Backends
 - **Watchtower**: auto-pull the latest docker images.
 - **Portainer**: Docker UI, served under `/portainer/`.
 - **Observability**:
-    - **Promtail**: ships Caddy and application logs to Loki.
+    - **Promtail**: collects access logs (from Caddy log file) and application logs (from docker
+      stdout) and ships them to Loki.
     - **Loki**: log database queried by Grafana.
     - **Prometheus**: scrapes metrics from:
         - Spring Boot apps
