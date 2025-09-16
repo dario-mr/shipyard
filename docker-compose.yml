@@ -7,7 +7,7 @@ include:
   - compose/compose.gateway.yml
   - compose/compose.apps.yml
   - compose/compose.fail2ban.yml
-  - compose/compose.grafana.yml
+  - compose/compose.observability.yml
 
 networks:
   backend:
@@ -21,3 +21,4 @@ volumes:
   grafana_data:
   promtail_pos:
   geoipupdate_data:
+  prometheus_data:
