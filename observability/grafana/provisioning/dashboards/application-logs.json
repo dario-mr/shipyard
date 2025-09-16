@@ -24,7 +24,7 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "loki"
       },
       "gridPos": {
         "h": 16,
@@ -47,9 +47,10 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "loki"
           },
-          "expr": "{app=~\"$app\", level=~\"$level\"} |~ \"$search\"",
+          "expr": "{app=~\"$app\", level=~\"$level\"}",
+          "queryType": "range",
           "refId": "A"
         }
       ],
@@ -59,7 +60,7 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "loki"
       },
       "description": "",
       "fieldConfig": {
@@ -141,7 +142,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "loki"
           },
           "editorMode": "code",
           "expr": "sum by (app) (rate({app=~\"$app\"}[$__interval]))",
@@ -156,7 +157,7 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "loki"
       },
       "fieldConfig": {
         "defaults": {
@@ -237,7 +238,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "loki"
           },
           "editorMode": "code",
           "expr": "sum by (app) (rate({app=~\"$app\", level=\"ERROR\"}[$__interval]))",
@@ -252,7 +253,7 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "loki"
       },
       "gridPos": {
         "h": 14,
@@ -275,7 +276,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "loki"
           },
           "expr": "{app=~\"$app\", level=\"ERROR\"} |~ \"$search\"",
           "refId": "A"
@@ -308,7 +309,7 @@
         },
         "datasource": {
           "type": "loki",
-          "uid": "P8E80F9AEF21F6940"
+          "uid": "loki"
         },
         "definition": "",
         "hide": 0,
@@ -325,7 +326,7 @@
       },
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": ".*",
           "value": ".*"
         },
@@ -392,6 +393,6 @@
   "timezone": "",
   "title": "Application logs",
   "uid": "application-logs",
-  "version": 6,
+  "version": 7,
   "weekStart": ""
 }
