@@ -22,3 +22,4 @@ volumes:
   promtail_pos:
   geoipupdate_data:
   prometheus_data:
+  alloy_data:

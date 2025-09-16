@@ -17,27 +17,53 @@ services:
       retries: 3
     read_only: true
 
-  promtail:
-    image: grafana/promtail:2.9.4
+  #  promtail:
+  #    image: grafana/promtail:2.9.4
+  #    labels:
+  #      - loki=true
+  #      - app=promtail
+  #    restart: unless-stopped
+  #    command:
+  #      - -config.file=/etc/promtail/promtail.yml
+  #      - -config.expand-env=true
+  #    environment:
+  #      DOMAIN: ${DOMAIN}
+  #    volumes:
+  #      - ../observability/promtail/promtail.yml:/etc/promtail/promtail.yml:ro
+  #      - /var/log/caddy:/var/log/caddy:ro
+  #      - promtail_pos:/var/lib/promtail
+  #      - geoipupdate_data:/usr/share/GeoIP:ro
+  #      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+  #      - /var/run/docker.sock:/var/run/docker.sock:ro
+  #    networks: [ backend ]
+  #    depends_on: [ loki, geoipupdate ]
+  #    read_only: true
+
+  alloy:
+    image: grafana/alloy:v1.10.2
     labels:
       - loki=true
-      - app=promtail
+      - app=alloy
     restart: unless-stopped
     command:
-      - -config.file=/etc/promtail/promtail.yml
-      - -config.expand-env=true
+      - run
+      - --server.http.listen-addr=0.0.0.0:9080
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
     environment:
       DOMAIN: ${DOMAIN}
     volumes:
-      - ../observability/promtail/promtail.yml:/etc/promtail/promtail.yml:ro
+      - ../observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
       - /var/log/caddy:/var/log/caddy:ro
-      - promtail_pos:/var/lib/promtail
+      - alloy_data:/var/lib/alloy
       - geoipupdate_data:/usr/share/GeoIP:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks: [ backend ]
     depends_on: [ loki, geoipupdate ]
     read_only: true
+    ports:
+      - "9080:9080"
 
   grafana:
     image: grafana/grafana:10.4.5
