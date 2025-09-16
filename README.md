@@ -7,18 +7,31 @@ around it.
 
 ## Architecture
 
-```plaintext
-Internet ──▶ Caddy ──▶ Gateway ───▶ Backends
-               │
-               │
-               ├─────▶ Promtail ──▶ Loki ────┐
-               │        (logs)               │
-               │                             ├───▶ Grafana
-               │                             │
-               ├─────▶ Prometheus ───────────┘
-               │       (metrics)
-               │
-               └─────▶ fail2ban
+```mermaid
+flowchart LR
+    Internet["Internet"]
+    Caddy["Caddy<br/><span style='font-size:13px'>reverse proxy</span>"]
+    Gateway["Gateway<br/><span style='font-size:13px'>routing</span>"]
+    Backends["Backends<br/><span style='font-size:13px'>apps & services</span>"]
+    fail2ban["fail2ban<br/><span style='font-size:13px'>ban offenders</span>"]
+    Promtail["Promtail<br/><span style='font-size:13px'>log agent</span>"]
+    Loki["Loki<br/><span style='font-size:13px'>log database</span>"]
+    Prometheus["Prometheus<br/><span style='font-size:13px'>metrics scraper</span>"]
+    Grafana["Grafana<br/><span style='font-size:13px'>dashboards</span>"]
+    Internet --> Caddy
+
+    subgraph Core
+        Caddy -->|forwards| Gateway -->|routes| Backends
+        fail2ban -->|tails| Caddy
+    end
+
+    subgraph Observability
+        Promtail -->|tails| Caddy
+        Promtail -->|ships| Loki
+        Grafana -->|queries| Loki
+        Grafana -->|queries| Prometheus
+        Prometheus -->|scrapes| Backends
+    end
 ```
 
 ## Components
@@ -26,13 +39,14 @@ Internet ──▶ Caddy ──▶ Gateway ───▶ Backends
 - **Caddy**: HTTPS, rate limiting, security headers, reverse proxy to `Gateway`.
 - **Gateway**: Spring Cloud Gateway (separate repo: [apigw](https://github.com/dario-mr/apigw)) that
   routes to upstream apps.
-- **fail2ban**: watches Caddy logs and bans offenders at firewall level.
+- **fail2ban**: tails Caddy logs and bans offenders at firewall level.
 - **Watchtower**: auto-pull the latest docker images.
 - **Portainer**: Docker UI, served under `/portainer/`.
 - **Observability**:
-    - **Promtail**: ships Caddy and application logs to Loki.
-    - **Loki**: log database queried by Grafana.
-    - **Prometheus**: scrapes metrics from:
+    - **Promtail**: tails access logs (from Caddy log file) and application logs (from docker
+      stdout) and ships them to Loki.
+    - **Loki**: log database.
+    - **Prometheus**: scrapes and stores metrics from:
         - Spring Boot apps
         - Prometheus itself, Loki, and Promtail
     - **Grafana**: dashboards for **logs** (Loki) and **metrics** (Prometheus), served under
