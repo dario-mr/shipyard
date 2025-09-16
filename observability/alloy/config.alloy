@@ -17,7 +17,7 @@ local.file_match "caddy_access" {
 }
 
 loki.process "caddy_access" {
-	forward_to = [loki.write.default.receiver]
+	forward_to = [loki.relabel.drop_filename_caddy.receiver]
 
 	stage.json {
 		expressions = {
@@ -53,6 +53,15 @@ loki.process "caddy_access" {
 	}
 }
 
+loki.relabel "drop_filename_caddy" {
+	forward_to = [loki.write.default.receiver]
+
+	rule {
+		action = "labeldrop"
+		regex  = "filename"
+	}
+}
+
 loki.source.file "caddy_access" {
 	targets    = local.file_match.caddy_access.targets
 	forward_to = [loki.process.caddy_access.receiver]
@@ -70,6 +79,13 @@ discovery.docker "docker_logs" {
 
 loki.process "docker_logs" {
 	forward_to = [loki.write.default.receiver]
+
+	stage.labels {
+		values = {
+			job  = "docker_logs",
+			host = sys.env("DOMAIN"),
+		}
+	}
 
 	stage.docker { }
 
