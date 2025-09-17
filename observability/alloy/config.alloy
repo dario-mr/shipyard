@@ -40,12 +40,26 @@ loki.process "caddy_access" {
 		db_type = "city"
 	}
 
-	// Add geo labels
-	stage.labels {
-		values = {
-			geoip_country_name = null,
-			geoip_city_name    = null,
-		}
+	// Build a compact JSON line with just the necessary fields
+	stage.template {
+		source   = "packed"
+		template = `{{ toJson (dict
+    "ts"                  .ts
+    "method"              .method
+    "uri"                 .uri
+    "remote_ip"           .remote_ip
+    "status"              .status
+    "size"                .size
+    "duration"            .duration
+    "geoip_country_name"  .geoip_country_name
+    "geoip_city_name"     .geoip_city_name
+    "msg"                 .msg
+  ) }}`
+	}
+
+	// Replace the log line with that compact JSON
+	stage.output {
+		source = "packed"
 	}
 
 	// Use Caddy's ts as the log timestamp

@@ -123,7 +123,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "sum by (geoip_country_name) (\n  count_over_time({job=\"caddy_access\", host=~\"$host\", geoip_country_name=~\".+\"}[$__range])\n)\nor\nlabel_replace(\n  sum(\n    count_over_time({job=\"caddy_access\", host=~\"$host\", geoip_country_name!~\".+\"}[$__range])\n  ),\n  \"geoip_country_name\", \"Unknown\", \"job\", \".*\"\n)",
+          "expr": "sum by (geoip_country_name) (\n  count_over_time(\n    {job=\"caddy_access\", host=~\"$host\"}\n    | json geoip_country_name=\"geoip_country_name\"\n    | label_format geoip_country_name=\"{{ if .geoip_country_name }}{{ .geoip_country_name }}{{ else }}Unknown{{ end }}\"\n    [$__range]\n  )\n)",
           "legendFormat": "{{geoip_country_name}}",
           "queryType": "range",
           "refId": "A"
@@ -222,7 +222,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "sum by (geoip_city_name) (\n  count_over_time({job=\"caddy_access\", host=~\"$host\", geoip_city_name=~\".+\"}[$__range])\n)\nor\nlabel_replace(\n  sum(\n    count_over_time({job=\"caddy_access\", host=~\"$host\", geoip_city_name!~\".+\"}[$__range])\n  ),\n  \"geoip_city_name\", \"Unknown\", \"job\", \".*\"\n)",
+          "expr": "sum by (geoip_city_name) (\n  count_over_time(\n    {job=\"caddy_access\", host=~\"$host\"}\n    | json geoip_city_name=\"geoip_city_name\"\n    | label_format geoip_city_name=\"{{ if .geoip_city_name }}{{ .geoip_city_name }}{{ else }}Unknown{{ end }}\"\n    [$__range]\n  )\n)",
           "legendFormat": "{{geoip_city_name}}",
           "queryType": "range",
           "refId": "A"
@@ -288,9 +288,9 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "topk(10,\n  sum by (ip) (\n    count_over_time(\n      {job=\"caddy_access\", host=~\"$host\"}\n      | json\n      | label_format ip=`{{ .request_remote_ip }}`\n      [$__range]\n    )\n  )\n)",
+          "expr": "topk(10,\n  sum by (remote_ip) (\n    count_over_time(\n      {job=\"caddy_access\", host=~\"$host\"}\n      | json remote_ip=\"remote_ip\"\n      | remote_ip=~\".+\"\n      [$__range]\n    )\n  )\n)",
           "instant": true,
-          "legendFormat": "{{request_remote_ip}}",
+          "legendFormat": "{{remote_ip}}",
           "queryType": "instant",
           "refId": "A"
         }
@@ -369,7 +369,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "topk(\n  10,\n  sum by (uri) (\n    count_over_time(\n      {job=\"caddy_access\", host=~\"$host\"}\n      | json\n      | label_format uri=`{{ .request_uri }}`\n      [$__range]\n    )\n  )\n)",
+          "expr": "topk(10,\n  sum by (uri) (\n    count_over_time(\n      {job=\"caddy_access\", host=~\"$host\"}\n      | json uri=\"uri\"\n      | uri=~\".+\"\n      [$__range]\n    )\n  )\n)",
           "instant": true,
           "legendFormat": "{{uri}}",
           "queryType": "instant",
@@ -1105,6 +1105,6 @@
   "timezone": "browser",
   "title": "Caddy Overview",
   "uid": "caddy-overview",
-  "version": 37,
+  "version": 41,
   "weekStart": ""
 }
