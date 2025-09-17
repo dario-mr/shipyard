@@ -47,6 +47,13 @@ loki.process "caddy_access" {
 		db_type = "city"
 	}
 
+	stage.labels {
+		values = {
+			geoip_country_name = null,
+			geoip_city_name    = null,
+		}
+	}
+
 	stage.timestamp {
 		source = "ts"
 		format = "Unix"
