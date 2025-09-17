@@ -1,24 +1,15 @@
-discovery.relabel "caddy_access" {
-	targets = [{
-		__address__ = "localhost",
-		__path__    = "/var/log/caddy/access.log",
-		host        = sys.env("DOMAIN"),
-		job         = "caddy_access",
-	}]
-
-	rule {
-		regex  = "filename"
-		action = "labeldrop"
+// ----------- Loki sink -----------
+loki.write "default" {
+	endpoint {
+		url = "http://loki:3100/loki/api/v1/push"
 	}
 }
 
-local.file_match "caddy_access" {
-	path_targets = discovery.relabel.caddy_access.output
-}
-
+// ----------- CADDY (file) -----------
 loki.process "caddy_access" {
 	forward_to = [loki.relabel.drop_filename_caddy.receiver]
 
+	// Parse top-level JSON from Caddy access logs
 	stage.json {
 		expressions = {
 			duration = "duration",
@@ -32,21 +23,24 @@ loki.process "caddy_access" {
 		}
 	}
 
+	// Parse request sub-object (remote_ip, method, uri, ...)
 	stage.json {
+		source      = "request"
 		expressions = {
 			method    = "method",
 			remote_ip = "remote_ip",
 			uri       = "uri",
 		}
-		source = "request"
 	}
 
+	// GeoIP enrichment from remote_ip
 	stage.geoip {
 		db      = "/usr/share/GeoIP/GeoLite2-City.mmdb"
 		source  = "remote_ip"
 		db_type = "city"
 	}
 
+	// Add geo labels
 	stage.labels {
 		values = {
 			geoip_country_name = null,
@@ -54,12 +48,14 @@ loki.process "caddy_access" {
 		}
 	}
 
+	// Use Caddy's ts as the log timestamp
 	stage.timestamp {
 		source = "ts"
 		format = "Unix"
 	}
 }
 
+// Drop file-derived 'filename' to keep streams lean
 loki.relabel "drop_filename_caddy" {
 	forward_to = [loki.write.default.receiver]
 
@@ -69,11 +65,17 @@ loki.relabel "drop_filename_caddy" {
 	}
 }
 
+// Tail Caddy access log file and send to pipeline
 loki.source.file "caddy_access" {
-	targets    = local.file_match.caddy_access.targets
 	forward_to = [loki.process.caddy_access.receiver]
+	targets    = [{
+		__path__ = "/var/log/caddy/access.log",
+		host     = sys.env("DOMAIN"),
+		job      = "caddy_access",
+	}]
 }
 
+// ----------- DOCKER (container stdout) -----------
 discovery.docker "docker_logs" {
 	host             = "unix:///var/run/docker.sock"
 	refresh_interval = "5s"
@@ -84,85 +86,7 @@ discovery.docker "docker_logs" {
 	}
 }
 
-loki.process "docker_logs" {
-	forward_to = [loki.write.default.receiver]
-
-	stage.labels {
-		values = {
-			job  = "docker_logs",
-			host = sys.env("DOMAIN"),
-		}
-	}
-
-	stage.docker { }
-
-	stage.match {
-		selector = "{app=\"caddy\"}"
-
-		stage.drop {
-			expression = "\"logger\":\"http\\.log\\.access\""
-		}
-	}
-
-	stage.match {
-		selector = "{app=\"caddy\"}"
-
-		stage.json {
-			expressions = {
-				level  = "level",
-				logger = "logger",
-				msg    = "msg",
-				ts     = "ts",
-			}
-		}
-
-		stage.labels {
-			values = {
-				level  = null,
-				logger = null,
-			}
-		}
-
-		stage.output {
-			source = "msg"
-		}
-
-		stage.timestamp {
-			source = "ts"
-			format = "Unix"
-		}
-	}
-
-	stage.match {
-		selector = "{logfmt=\"json\", app!=\"caddy\"}"
-
-		stage.json {
-			expressions = {
-				level  = "level",
-				logger = "logger_name",
-				msg    = "message",
-				ts     = "[\"@timestamp\"]",
-			}
-		}
-
-		stage.labels {
-			values = {
-				level  = null,
-				logger = null,
-			}
-		}
-
-		stage.output {
-			source = "msg"
-		}
-
-		stage.timestamp {
-			source = "ts"
-			format = "RFC3339Nano"
-		}
-	}
-}
-
+// Map docker meta -> labels (+ add job label here)
 discovery.relabel "docker_logs" {
 	targets = []
 
@@ -180,19 +104,106 @@ discovery.relabel "docker_logs" {
 		source_labels = ["__meta_docker_container_label_logfmt"]
 		target_label  = "logfmt"
 	}
+
+	rule {
+		target_label = "job"
+		replacement  = "docker_logs"
+	}
 }
 
+// Tail docker container logs and send to pipeline
 loki.source.docker "docker_logs" {
 	host             = "unix:///var/run/docker.sock"
 	targets          = discovery.docker.docker_logs.targets
-	forward_to       = [loki.process.docker_logs.receiver]
 	relabel_rules    = discovery.relabel.docker_logs.rules
 	refresh_interval = "5s"
+	forward_to       = [loki.process.docker_logs.receiver]
 }
 
-loki.write "default" {
-	endpoint {
-		url = "http://loki:3100/loki/api/v1/push"
+loki.process "docker_logs" {
+	forward_to = [loki.write.default.receiver]
+
+	// Add a stable host label; job comes from discovery.relabel
+	stage.labels {
+		values = {host = sys.env("DOMAIN")}
 	}
-	external_labels = {}
+
+	// Parse docker JSON wrapper (time, stream, attrs) and set 'log' as body
+	stage.docker { }
+
+	// Drop Caddy access lines from stdout to avoid duplicates
+	stage.match {
+		selector = "{app=\"caddy\"}"
+
+		stage.drop {
+			expression = "\"logger\":\"http\\.log\\.access\""
+		}
+	}
+
+	// Parse remaining Caddy stdout JSON (non-access)
+	stage.match {
+		selector = "{app=\"caddy\"}"
+
+		stage.json {
+			expressions = {
+				level  = "level",
+				logger = "logger",
+				msg    = "msg",
+				ts     = "ts",
+			}
+		}
+
+		stage.labels {
+			values = {level = null, logger = null}
+		}
+
+		stage.output {
+			source = "msg"
+		}
+
+		stage.timestamp {
+			source = "ts"
+			format = "Unix"
+		}
+	}
+
+	// Parse other JSON-emitting apps
+	stage.match {
+		selector = "{logfmt=\"json\", app!=\"caddy\"}"
+
+		stage.json {
+			expressions = {
+				level  = "level",
+				logger = "logger_name",
+				msg    = "message",
+				ts     = "[\"@timestamp\"]",
+			}
+		}
+
+		// Fallbacks if apps use different ts keys
+		stage.json {
+			expressions = {ts = "timestamp"}
+		}
+
+		stage.json {
+			expressions = {ts = "time"}
+		}
+
+		stage.json {
+			expressions = {ts = "ts"}
+		}
+
+		stage.labels {
+			values = {level = null, logger = null}
+		}
+
+		stage.output {
+			source = "msg"
+		}
+
+		stage.timestamp {
+			source = "ts"
+			format = "RFC3339Nano"
+		}
+	}
 }
