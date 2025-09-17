@@ -116,7 +116,7 @@ loki.source.docker "docker_logs" {
 }
 
 loki.process "docker_logs" {
-	forward_to = [loki.write.default.receiver]
+	forward_to = [loki.relabel.docker_cleanup.receiver]
 
 	// Add a stable host label; job comes from discovery.relabel
 	stage.labels {
@@ -149,7 +149,7 @@ loki.process "docker_logs" {
 		}
 
 		stage.labels {
-			values = {level = null, logger = null}
+			values = {level = null}
 		}
 
 		stage.output {
@@ -189,7 +189,13 @@ loki.process "docker_logs" {
 		}
 
 		stage.labels {
-			values = {level = null, logger = null}
+			values = {level = null}
+		}
+
+		// build a compact line that includes logger + message
+		stage.template {
+			template = "{{ .logger }} — {{ .msg }}"
+			source   = "msg"
 		}
 
 		stage.output {
@@ -200,5 +206,14 @@ loki.process "docker_logs" {
 			source = "ts"
 			format = "RFC3339Nano"
 		}
+	}
+}
+
+loki.relabel "docker_cleanup" {
+	forward_to = [loki.write.default.receiver]
+
+	rule {
+		action = "labeldrop"
+		regex  = "logfmt"
 	}
 }
