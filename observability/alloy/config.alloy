@@ -86,7 +86,7 @@ discovery.docker "docker_logs" {
 	}
 }
 
-// Map docker meta -> labels (+ add job label here)
+// Map docker meta -> labels
 discovery.relabel "docker_logs" {
 	targets = []
 
@@ -103,11 +103,6 @@ discovery.relabel "docker_logs" {
 	rule {
 		source_labels = ["__meta_docker_container_label_logfmt"]
 		target_label  = "logfmt"
-	}
-
-	rule {
-		target_label = "job"
-		replacement  = "docker_logs"
 	}
 }
 
@@ -128,7 +123,7 @@ loki.process "docker_logs" {
 		values = {host = sys.env("DOMAIN")}
 	}
 
-	// Parse docker JSON wrapper (time, stream, attrs) and set 'log' as body
+	// Parse docker JSON wrapper
 	stage.docker { }
 
 	// Drop Caddy access lines from stdout to avoid duplicates
@@ -167,7 +162,7 @@ loki.process "docker_logs" {
 		}
 	}
 
-	// Parse other JSON-emitting apps
+	// Parse only non-Caddy JSON apps
 	stage.match {
 		selector = "{logfmt=\"json\", app!=\"caddy\"}"
 
