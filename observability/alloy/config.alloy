@@ -93,11 +93,6 @@ loki.source.file "caddy_access" {
 discovery.docker "docker_logs" {
 	host             = "unix:///var/run/docker.sock"
 	refresh_interval = "5s"
-
-	filter {
-		name   = "label"
-		values = ["loki=true"]
-	}
 }
 
 // Map docker meta -> labels
@@ -118,6 +113,11 @@ discovery.relabel "docker_logs" {
 		source_labels = ["__meta_docker_container_label_logfmt"]
 		target_label  = "logfmt"
 	}
+
+	rule {
+		source_labels = ["__meta_docker_container_label_logs_scrape"]
+		target_label  = "logs_scrape"
+	}
 }
 
 // Tail docker container logs and send to pipeline
@@ -132,7 +132,16 @@ loki.source.docker "docker_logs" {
 loki.process "docker_logs" {
 	forward_to = [loki.relabel.docker_cleanup.receiver]
 
-	// Add a stable host label; job comes from discovery.relabel
+	// Drop logs from containers with logs_scrape=false
+	stage.match {
+		selector = "{logs_scrape=\"false\"}"
+
+		stage.drop {
+			expression = ".*"
+		}
+	}
+
+	// Add a stable host label
 	stage.labels {
 		values = {host = sys.env("DOMAIN")}
 	}
@@ -228,6 +237,6 @@ loki.relabel "docker_cleanup" {
 
 	rule {
 		action = "labeldrop"
-		regex  = "logfmt"
+		regex  = "logfmt|logs_scrape"
 	}
 }

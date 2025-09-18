@@ -2,8 +2,8 @@ services:
   loki:
     image: grafana/loki:2.9.4
     labels:
-      - loki=true
       - app=loki
+      - logs_scrape=false
     restart: unless-stopped
     command: -config.file=/etc/loki/loki.yml
     volumes:
@@ -20,7 +20,6 @@ services:
   alloy:
     image: grafana/alloy:v1.10.2
     labels:
-      - loki=true
       - app=alloy
     restart: unless-stopped
     command:
@@ -46,7 +45,6 @@ services:
   grafana:
     image: grafana/grafana:10.4.5
     labels:
-      - loki=true
       - app=grafana
     restart: unless-stopped
     environment:
@@ -68,7 +66,6 @@ services:
   geoipupdate:
     image: ghcr.io/maxmind/geoipupdate:v7.1.1
     labels:
-      - loki=true
       - app=geoipupdate
     restart: unless-stopped
     environment:
@@ -88,7 +85,6 @@ services:
   prometheus:
     image: prom/prometheus:v3.5.0
     labels:
-      - loki=true
       - app=prometheus
     restart: unless-stopped
     command:

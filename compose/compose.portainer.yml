@@ -2,7 +2,6 @@ services:
   portainer:
     image: portainer/portainer-ce:2.33.1
     labels:
-      - loki=true
       - app=portainer
     restart: unless-stopped
     command:

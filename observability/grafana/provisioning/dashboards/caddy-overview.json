@@ -904,7 +904,7 @@
           },
           "editorMode": "code",
           "expr": "quantile_over_time(\n  0.95,\n  {job=\"caddy_access\", host=~\"$host\"}\n  | json\n  | status != 101\n  | unwrap duration [5m]\n)",
-          "legendFormat": "{{request_uri}}",
+          "legendFormat": "{{uri}}",
           "queryType": "range",
           "refId": "A"
         }
@@ -1098,13 +1098,13 @@
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Caddy Overview",
   "uid": "caddy-overview",
-  "version": 41,
+  "version": 43,
   "weekStart": ""
 }
