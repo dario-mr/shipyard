@@ -14,7 +14,7 @@ flowchart LR
     Gateway["Gateway<br/><span style='font-size:13px'>routing</span>"]
     Backends["Backends<br/><span style='font-size:13px'>apps & services</span>"]
     fail2ban["fail2ban<br/><span style='font-size:13px'>ban offenders</span>"]
-    Promtail["Promtail<br/><span style='font-size:13px'>log agent</span>"]
+    Alloy["Alloy<br/><span style='font-size:13px'>log agent</span>"]
     Loki["Loki<br/><span style='font-size:13px'>log database</span>"]
     Prometheus["Prometheus<br/><span style='font-size:13px'>metrics scraper</span>"]
     Grafana["Grafana<br/><span style='font-size:13px'>dashboards</span>"]
@@ -26,10 +26,11 @@ flowchart LR
     end
 
     subgraph Observability
-        Promtail -->|tails| Caddy
-        Promtail -->|ships| Loki
-        Grafana -->|queries| Loki
-        Grafana -->|queries| Prometheus
+        Alloy -->|tails| Caddy
+        Alloy -->|tails| Backends
+        Alloy -->|ships| Loki
+        Grafana -->|queries logs| Loki
+        Grafana -->|queries metrics| Prometheus
         Prometheus -->|scrapes| Backends
     end
 ```
@@ -43,12 +44,12 @@ flowchart LR
 - **Watchtower**: auto-pull the latest docker images.
 - **Portainer**: Docker UI, served under `/portainer/`.
 - **Observability**:
-    - **Promtail**: tails access logs (from Caddy log file) and application logs (from docker
+    - **Alloy**: tails access logs (from Caddy log file) and application logs (from docker
       stdout) and ships them to Loki.
     - **Loki**: log database.
     - **Prometheus**: scrapes and stores metrics from:
         - Spring Boot apps
-        - Prometheus itself, Loki, and Promtail
+        - Prometheus itself, Loki, and Alloy
     - **Grafana**: dashboards for **logs** (Loki) and **metrics** (Prometheus), served under
       `/grafana/`.
 - **Backends**: `api-stress-test`, `ichiro-family-tree`, etc.

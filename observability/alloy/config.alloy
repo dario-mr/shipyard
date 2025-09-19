@@ -1,0 +1,242 @@
+// ----------- Loki sink -----------
+loki.write "default" {
+	endpoint {
+		url = "http://loki:3100/loki/api/v1/push"
+	}
+}
+
+// ----------- CADDY (tail log file) -----------
+loki.process "caddy_access" {
+	forward_to = [loki.relabel.drop_filename_caddy.receiver]
+
+	// Parse top-level JSON from Caddy access logs
+	stage.json {
+		expressions = {
+			duration = "duration",
+			level    = "level",
+			logger   = "logger",
+			msg      = "msg",
+			request  = "request",
+			size     = "size",
+			status   = "status",
+			ts       = "ts",
+		}
+	}
+
+	// Parse request sub-object (remote_ip, method, uri, ...)
+	stage.json {
+		source      = "request"
+		expressions = {
+			method    = "method",
+			remote_ip = "remote_ip",
+			uri       = "uri",
+		}
+	}
+
+	// GeoIP enrichment from remote_ip
+	stage.geoip {
+		db      = "/usr/share/GeoIP/GeoLite2-City.mmdb"
+		source  = "remote_ip"
+		db_type = "city"
+	}
+
+	// Build a compact JSON line with just the necessary fields
+	stage.template {
+		source   = "packed"
+		template = `{{ toJson (dict
+    "ts"                  .ts
+    "method"              .method
+    "uri"                 .uri
+    "remote_ip"           .remote_ip
+    "status"              .status
+    "size"                .size
+    "duration"            .duration
+    "geoip_country_name"  .geoip_country_name
+    "geoip_city_name"     .geoip_city_name
+    "msg"                 .msg
+  ) }}`
+	}
+
+	// Replace the log line with that compact JSON
+	stage.output {
+		source = "packed"
+	}
+
+	// Use Caddy's ts as the log timestamp
+	stage.timestamp {
+		source = "ts"
+		format = "Unix"
+	}
+}
+
+// Drop file-derived 'filename' to keep streams lean
+loki.relabel "drop_filename_caddy" {
+	forward_to = [loki.write.default.receiver]
+
+	rule {
+		action = "labeldrop"
+		regex  = "filename"
+	}
+}
+
+// Tail Caddy access log file and send to pipeline
+loki.source.file "caddy_access" {
+	forward_to = [loki.process.caddy_access.receiver]
+	targets    = [{
+		__path__ = "/var/log/caddy/access.log",
+		host     = sys.env("DOMAIN"),
+		job      = "caddy_access",
+	}]
+}
+
+// ----------- DOCKER (tail containers stdout) -----------
+discovery.docker "docker_logs" {
+	host             = "unix:///var/run/docker.sock"
+	refresh_interval = "5s"
+}
+
+// Map docker meta -> labels
+discovery.relabel "docker_logs" {
+	targets = []
+
+	rule {
+		source_labels = ["__meta_docker_container_log_path"]
+		target_label  = "__path__"
+	}
+
+	rule {
+		source_labels = ["__meta_docker_container_label_app"]
+		target_label  = "app"
+	}
+
+	rule {
+		source_labels = ["__meta_docker_container_label_logfmt"]
+		target_label  = "logfmt"
+	}
+
+	rule {
+		source_labels = ["__meta_docker_container_label_logs_scrape"]
+		target_label  = "logs_scrape"
+	}
+}
+
+// Tail docker container logs and send to pipeline
+loki.source.docker "docker_logs" {
+	host             = "unix:///var/run/docker.sock"
+	targets          = discovery.docker.docker_logs.targets
+	relabel_rules    = discovery.relabel.docker_logs.rules
+	refresh_interval = "5s"
+	forward_to       = [loki.process.docker_logs.receiver]
+}
+
+loki.process "docker_logs" {
+	forward_to = [loki.relabel.docker_cleanup.receiver]
+
+	// Drop logs from containers with logs_scrape=false
+	stage.match {
+		selector = "{logs_scrape=\"false\"}"
+
+		stage.drop {
+			expression = ".*"
+		}
+	}
+
+	// Add a stable host label
+	stage.labels {
+		values = {host = sys.env("DOMAIN")}
+	}
+
+	// Parse docker JSON wrapper
+	stage.docker { }
+
+	// Drop Caddy access lines from stdout to avoid duplicates
+	stage.match {
+		selector = "{app=\"caddy\"}"
+
+		stage.drop {
+			expression = "\"logger\":\"http\\.log\\.access\""
+		}
+	}
+
+	// Parse remaining Caddy stdout JSON (non-access)
+	stage.match {
+		selector = "{app=\"caddy\"}"
+
+		stage.json {
+			expressions = {
+				level  = "level",
+				logger = "logger",
+				msg    = "msg",
+				ts     = "ts",
+			}
+		}
+
+		stage.labels {
+			values = {level = null}
+		}
+
+		stage.output {
+			source = "msg"
+		}
+
+		stage.timestamp {
+			source = "ts"
+			format = "Unix"
+		}
+	}
+
+	// Parse only non-Caddy JSON apps
+	stage.match {
+		selector = "{logfmt=\"json\", app!=\"caddy\"}"
+
+		stage.json {
+			expressions = {
+				level  = "level",
+				logger = "logger_name",
+				msg    = "message",
+				ts     = "[\"@timestamp\"]",
+			}
+		}
+
+		// Fallbacks if apps use different ts keys
+		stage.json {
+			expressions = {ts = "timestamp"}
+		}
+
+		stage.json {
+			expressions = {ts = "time"}
+		}
+
+		stage.json {
+			expressions = {ts = "ts"}
+		}
+
+		stage.labels {
+			values = {level = null}
+		}
+
+		// build a compact line that includes logger + message
+		stage.template {
+			template = "{{ .logger }} — {{ .msg }}"
+			source   = "msg"
+		}
+
+		stage.output {
+			source = "msg"
+		}
+
+		stage.timestamp {
+			source = "ts"
+			format = "RFC3339Nano"
+		}
+	}
+}
+
+loki.relabel "docker_cleanup" {
+	forward_to = [loki.write.default.receiver]
+
+	rule {
+		action = "labeldrop"
+		regex  = "logfmt|logs_scrape"
+	}
+}

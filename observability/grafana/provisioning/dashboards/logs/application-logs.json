@@ -326,7 +326,7 @@
       },
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": ".*",
           "value": ".*"
         },
@@ -386,13 +386,13 @@
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Application logs",
   "uid": "application-logs",
-  "version": 7,
+  "version": 12,
   "weekStart": ""
 }
