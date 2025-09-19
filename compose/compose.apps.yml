@@ -25,7 +25,6 @@ services:
       OAUTH_CLIENT_SECRET: "${OAUTH_CLIENT_SECRET}"
       ENCRYPTION_KEY: "${ENCRYPTION_KEY}"
     labels:
-      - loki=true
       - logfmt=json
       - app=api-stress-test
 
@@ -39,7 +38,6 @@ services:
     environment:
       DB_PASSWORD: "${DB_PASSWORD}"
     labels:
-      - loki=true
       - logfmt=json
       - app=ichiro-family-tree
 
@@ -53,7 +51,6 @@ services:
     environment:
       DB_PASSWORD: "${DB_PASSWORD}"
     labels:
-      - loki=true
       - logfmt=json
       - app=shortly
 
@@ -67,6 +64,5 @@ services:
     environment:
       DB_PASSWORD: "${DB_PASSWORD}"
     labels:
-      - loki=true
       - logfmt=json
       - app=ichiro-walks
