@@ -27,9 +27,10 @@ flowchart LR
 
     subgraph Observability
         Alloy -->|tails| Caddy
+        Alloy -->|tails| Backends
         Alloy -->|ships| Loki
-        Grafana -->|queries| Loki
-        Grafana -->|queries| Prometheus
+        Grafana -->|queries logs| Loki
+        Grafana -->|queries metrics| Prometheus
         Prometheus -->|scrapes| Backends
     end
 ```

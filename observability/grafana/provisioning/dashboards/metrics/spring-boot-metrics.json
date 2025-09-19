@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 7,
+  "id": 19,
   "links": [],
   "panels": [
     {
@@ -158,7 +158,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "ops"
         },
         "overrides": []
       },
@@ -255,7 +256,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "ops"
         },
         "overrides": []
       },
@@ -486,7 +488,7 @@
           "refId": "A"
         }
       ],
-      "title": "Latency (Average)",
+      "title": "Latency (global average)",
       "type": "timeseries"
     },
     {
@@ -1538,7 +1540,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "ops"
         },
         "overrides": []
       },
@@ -2328,7 +2331,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "ops"
         },
         "overrides": [
           {
@@ -2441,7 +2445,7 @@
           "refId": "A"
         }
       ],
-      "title": "Log rate (/s)",
+      "title": "Log rate",
       "type": "timeseries"
     },
     {
@@ -3136,7 +3140,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "ops"
         },
         "overrides": []
       },
@@ -3250,7 +3255,7 @@
     "list": [
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "api-stress-test",
           "value": "api-stress-test"
         },
@@ -3367,6 +3372,6 @@
   "timezone": "browser",
   "title": "Spring Boot metrics",
   "uid": "spring-boot-metrics",
-  "version": 23,
+  "version": 2,
   "weekStart": ""
 }

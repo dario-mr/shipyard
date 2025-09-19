@@ -39,8 +39,6 @@ services:
     networks: [ backend ]
     depends_on: [ loki, geoipupdate ]
     read_only: true
-    ports:
-      - "9080:9080"
 
   grafana:
     image: grafana/grafana:10.4.5

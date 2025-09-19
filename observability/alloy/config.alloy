@@ -5,7 +5,7 @@ loki.write "default" {
 	}
 }
 
-// ----------- CADDY (file) -----------
+// ----------- CADDY (tail log file) -----------
 loki.process "caddy_access" {
 	forward_to = [loki.relabel.drop_filename_caddy.receiver]
 
@@ -89,7 +89,7 @@ loki.source.file "caddy_access" {
 	}]
 }
 
-// ----------- DOCKER (container stdout) -----------
+// ----------- DOCKER (tail containers stdout) -----------
 discovery.docker "docker_logs" {
 	host             = "unix:///var/run/docker.sock"
 	refresh_interval = "5s"

@@ -1040,8 +1040,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Prometheus Jobs",
-  "uid": "prometheus-jobs",
+  "title": "Infrastructure Metrics",
+  "uid": "infrastructure-metrics",
   "version": 13,
   "weekStart": ""
 }
