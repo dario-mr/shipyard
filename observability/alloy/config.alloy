@@ -44,17 +44,19 @@ loki.process "caddy_access" {
 	stage.template {
 		source   = "packed"
 		template = `{{ toJson (dict
-    "ts"                  .ts
-    "method"              .method
-    "uri"                 .uri
-    "remote_ip"           .remote_ip
-    "status"              .status
-    "size"                .size
-    "duration"            .duration
-    "geoip_country_name"  .geoip_country_name
-    "geoip_city_name"     .geoip_city_name
-    "msg"                 .msg
-  ) }}`
+            "ts"                       .ts
+            "method"                   .method
+            "uri"                      .uri
+            "remote_ip"                .remote_ip
+            "status"                   .status
+            "size"                     .size
+            "duration"                 .duration
+            "geoip_country_name"       .geoip_country_name
+            "geoip_city_name"          .geoip_city_name
+            "geoip_location_latitude"  .geoip_location_latitude
+            "geoip_location_longitude" .geoip_location_longitude
+            "msg"                      .msg
+        ) }}`
 	}
 
 	// Replace the log line with that compact JSON
