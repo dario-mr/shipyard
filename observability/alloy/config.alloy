@@ -232,6 +232,42 @@ loki.process "docker_logs" {
 			format = "RFC3339Nano"
 		}
 	}
+
+	// Parse Grafana's logfmt lines
+	stage.match {
+		selector = "{app=\"grafana\"}"
+
+		// Extract key=value fields
+		stage.logfmt {
+			mapping = {
+				t        = "t",
+				level    = "level",
+				logger   = "logger",
+				msg      = "msg",
+				duration = "duration",
+			}
+		}
+
+		// Promote only level (low-cardinality field) to label
+		stage.labels {
+			values = {level = null}
+		}
+
+		// log line = logger + message
+		stage.template {
+			template = "{{ .logger }} — {{ .msg }}"
+			source   = "msg"
+		}
+
+		stage.output {
+			source = "msg"
+		}
+
+		stage.timestamp {
+			source = "t"
+			format = "RFC3339Nano"
+		}
+	}
 }
 
 loki.relabel "docker_cleanup" {
