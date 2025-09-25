@@ -177,6 +177,11 @@ loki.process "docker_logs" {
 			values = {level = null}
 		}
 
+		stage.template {
+			template = "{{ if .logger }}{{ .logger }} — {{ end }}{{ .msg }}"
+			source   = "msg"
+		}
+
 		stage.output {
 			source = "msg"
 		}
@@ -245,6 +250,8 @@ loki.process "docker_logs" {
 				logger   = "logger",
 				msg      = "msg",
 				duration = "duration",
+				error    = "error",
+				query    = "query",
 			}
 		}
 
@@ -253,7 +260,7 @@ loki.process "docker_logs" {
 		}
 
 		stage.template {
-			template = "{{ .logger }} — {{ .msg }}"
+			template = "{{ .logger }} — {{ .msg }}{{ if .error }}\nerror={{ .error }}{{ if .query }}\nquery={{ .query }}{{ end }}{{ end }}"
 			source   = "msg"
 		}
 
@@ -293,7 +300,7 @@ loki.process "docker_logs" {
 		}
 
 		stage.template {
-			template = "{{ if .node_id }}{{ .node_id }} — {{ end }}{{ if .component_id }}{{ .component_id }} — {{ end }}{{ .msg }}{{ if .error }} - error={{ .error }}{{ end }}"
+			template = "{{ if .node_id }}{{ .node_id }} — {{ end }}{{ if .component_id }}{{ .component_id }} — {{ end }}{{ .msg }}{{ if .error }}\nerror={{ .error }}{{ end }}"
 			source   = "msg"
 		}
 

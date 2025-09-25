@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 21,
+  "id": 29,
   "links": [],
   "panels": [
     {
@@ -676,7 +676,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "count( sum by (ip) (\n  count_over_time({job=\"caddy_access\", host=~\"$host\"} | json | label_format ip=`{{ .request_remote_ip }}` [$__range])\n))",
+          "expr": "count(sum by (ip) (\n  count_over_time({job=\"caddy_access\", host=~\"$host\"} | json | label_format ip=`{{ .remote_ip }}` [$__range])\n))",
           "instant": true,
           "queryType": "range",
           "refId": "A"
@@ -1299,6 +1299,6 @@
   "timezone": "browser",
   "title": "Access logs",
   "uid": "access-logs",
-  "version": 6,
+  "version": 2,
   "weekStart": ""
 }
