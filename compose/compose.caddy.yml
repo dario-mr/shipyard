@@ -3,7 +3,6 @@ services:
     image: dariomr8/caddy-with-ratelimit:2.10.0
     labels:
       - app=caddy
-      - logfmt=json
     restart: unless-stopped
     ports:
       - "80:80"
