@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 19,
+  "id": 24,
   "links": [],
   "panels": [
     {
@@ -1489,7 +1489,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Database connection timeouts (should be ~0)",
+      "description": "Database connection timeouts per second (should be ~0)",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1578,7 +1578,7 @@
           "refId": "A"
         }
       ],
-      "title": "Timeouts /s",
+      "title": "Timeouts",
       "type": "timeseries"
     },
     {
@@ -2086,7 +2086,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "ops"
         },
         "overrides": []
       },
@@ -2123,7 +2124,7 @@
           "refId": "A"
         }
       ],
-      "title": "Repo call rate (/s)",
+      "title": "Repo call rate",
       "type": "timeseries"
     },
     {
@@ -2607,7 +2608,7 @@
               }
             ]
           },
-          "unit": "bytes"
+          "unit": "binBps"
         },
         "overrides": []
       },
@@ -2644,7 +2645,7 @@
           "refId": "A"
         }
       ],
-      "title": "Memory allocation rate (bytes/s)",
+      "title": "Memory allocation rate",
       "type": "timeseries"
     },
     {
@@ -3255,7 +3256,7 @@
     "list": [
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "api-stress-test",
           "value": "api-stress-test"
         },
@@ -3365,7 +3366,7 @@
     ]
   },
   "time": {
-    "from": "now-12h",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},

@@ -233,7 +233,7 @@ loki.process "docker_logs" {
 		}
 	}
 
-	// Parse Grafana's logfmt lines
+	// Grafana
 	stage.match {
 		selector = "{app=\"grafana\"}"
 
@@ -248,12 +248,10 @@ loki.process "docker_logs" {
 			}
 		}
 
-		// Promote only level (low-cardinality field) to label
 		stage.labels {
 			values = {level = null}
 		}
 
-		// log line = logger + message
 		stage.template {
 			template = "{{ .logger }} — {{ .msg }}"
 			source   = "msg"
@@ -265,6 +263,46 @@ loki.process "docker_logs" {
 
 		stage.timestamp {
 			source = "t"
+			format = "RFC3339Nano"
+		}
+	}
+
+	// Alloy
+	stage.match {
+		selector = "{app=\"alloy\"}"
+
+		// Only try to parse lines that look like Alloy logfmt
+		stage.regex {
+			expression = "^ts=[^ ]+ level=[^ ]+ msg="
+		}
+
+		// Extract key=value fields
+		stage.logfmt {
+			mapping = {
+				ts           = "ts",
+				level        = "level",
+				msg          = "msg",
+				component_id = "component_id",
+				error        = "error",
+				node_id      = "node_id",
+			}
+		}
+
+		stage.labels {
+			values = {level = null}
+		}
+
+		stage.template {
+			template = "{{ if .node_id }}{{ .node_id }} — {{ end }}{{ if .component_id }}{{ .component_id }} — {{ end }}{{ .msg }}{{ if .error }} - error={{ .error }}{{ end }}"
+			source   = "msg"
+		}
+
+		stage.output {
+			source = "msg"
+		}
+
+		stage.timestamp {
+			source = "ts"
 			format = "RFC3339Nano"
 		}
 	}
