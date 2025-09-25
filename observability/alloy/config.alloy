@@ -177,6 +177,11 @@ loki.process "docker_logs" {
 			values = {level = null}
 		}
 
+		stage.template {
+			template = "{{ if .logger }}{{ .logger }} — {{ end }}{{ .msg }}"
+			source   = "msg"
+		}
+
 		stage.output {
 			source = "msg"
 		}
@@ -229,6 +234,114 @@ loki.process "docker_logs" {
 
 		stage.timestamp {
 			source = "ts"
+			format = "RFC3339Nano"
+		}
+	}
+
+	// Grafana
+	stage.match {
+		selector = "{app=\"grafana\"}"
+
+		// Extract key=value fields
+		stage.logfmt {
+			mapping = {
+				t        = "t",
+				level    = "level",
+				logger   = "logger",
+				msg      = "msg",
+				duration = "duration",
+				error    = "error",
+				query    = "query",
+			}
+		}
+
+		stage.labels {
+			values = {level = null}
+		}
+
+		stage.template {
+			template = "{{ .logger }} — {{ .msg }}{{ if .error }}\nerror={{ .error }}{{ if .query }}\nquery={{ .query }}{{ end }}{{ end }}"
+			source   = "msg"
+		}
+
+		stage.output {
+			source = "msg"
+		}
+
+		stage.timestamp {
+			source = "t"
+			format = "RFC3339Nano"
+		}
+	}
+
+	// Alloy
+	stage.match {
+		selector = "{app=\"alloy\"}"
+
+		// Only try to parse lines that look like Alloy logfmt
+		stage.regex {
+			expression = "^ts=[^ ]+ level=[^ ]+ msg="
+		}
+
+		// Extract key=value fields
+		stage.logfmt {
+			mapping = {
+				ts           = "ts",
+				level        = "level",
+				msg          = "msg",
+				component_id = "component_id",
+				error        = "error",
+				node_id      = "node_id",
+			}
+		}
+
+		stage.labels {
+			values = {level = null}
+		}
+
+		stage.template {
+			template = "{{ if .node_id }}{{ .node_id }} — {{ end }}{{ if .component_id }}{{ .component_id }} — {{ end }}{{ .msg }}{{ if .error }}\nerror={{ .error }}{{ end }}"
+			source   = "msg"
+		}
+
+		stage.output {
+			source = "msg"
+		}
+
+		stage.timestamp {
+			source = "ts"
+			format = "RFC3339Nano"
+		}
+	}
+
+	// Prometheus
+	stage.match {
+		selector = "{app=\"prometheus\"}"
+
+		// Extract key=value fields
+		stage.logfmt {
+			mapping = {
+				time  = "time",
+				level = "level",
+				msg   = "msg",
+			}
+		}
+
+		stage.labels {
+			values = {level = null}
+		}
+
+		stage.template {
+			template = "{{ .msg }}"
+			source   = "msg"
+		}
+
+		stage.output {
+			source = "msg"
+		}
+
+		stage.timestamp {
+			source = "time"
 			format = "RFC3339Nano"
 		}
 	}

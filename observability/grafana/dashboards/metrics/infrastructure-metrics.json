@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 8,
+  "id": 27,
   "links": [],
   "panels": [
     {
@@ -677,7 +677,7 @@
           "refId": "A"
         }
       ],
-      "title": "Samples scraped /s",
+      "title": "Samples scraped",
       "type": "timeseries"
     },
     {
@@ -773,7 +773,7 @@
           "refId": "A"
         }
       ],
-      "title": "Samples post relabeling /s",
+      "title": "Samples post relabeling",
       "type": "timeseries"
     },
     {
@@ -837,7 +837,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -931,7 +932,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -988,9 +990,9 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "spring-boot",
-          "value": "spring-boot"
+          "selected": true,
+          "text": "prometheus",
+          "value": "prometheus"
         },
         "datasource": {
           "type": "prometheus",
@@ -1012,8 +1014,8 @@
       {
         "current": {
           "selected": false,
-          "text": "api-stress-test:8083",
-          "value": "api-stress-test:8083"
+          "text": "prometheus:9090",
+          "value": "prometheus:9090"
         },
         "datasource": {
           "type": "prometheus",
@@ -1035,13 +1037,13 @@
     ]
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Infrastructure Metrics",
   "uid": "infrastructure-metrics",
-  "version": 13,
+  "version": 2,
   "weekStart": ""
 }

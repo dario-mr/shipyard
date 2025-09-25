@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 20,
+  "id": 26,
   "links": [],
   "panels": [
     {
@@ -37,7 +37,7 @@
         "dedupStrategy": "none",
         "enableLogDetails": true,
         "prettifyLogMessage": false,
-        "showCommonLabels": false,
+        "showCommonLabels": true,
         "showLabels": true,
         "showTime": true,
         "sortOrder": "Descending",
@@ -50,7 +50,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "{app=~\"$app\", level=~\"$level\"} |~ \"(?i)(.*${search:regex}.*|^$)\"",
+          "expr": "{app=~\"$app\", level=~\"(?i)$level\"} |~ \"(?i)(?:${search:regex}|^$)\"",
           "queryType": "range",
           "refId": "A"
         }
@@ -242,7 +242,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "sum by (app) (rate({app=~\"$app\", level=\"ERROR\"}[$__interval]))",
+          "expr": "sum by (app) (rate({app=~\"$app\", level=~\"(?i)error\"}[$__interval]))",
           "legendFormat": "{{app}}",
           "queryType": "range",
           "refId": "A"
@@ -267,7 +267,7 @@
         "dedupStrategy": "none",
         "enableLogDetails": true,
         "prettifyLogMessage": false,
-        "showCommonLabels": false,
+        "showCommonLabels": true,
         "showLabels": true,
         "showTime": true,
         "sortOrder": "Descending",
@@ -279,7 +279,9 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{app=~\"$app\", level=\"ERROR\"} |~ \"$search\"",
+          "editorMode": "code",
+          "expr": "{app=~\"$app\", level=~\"(?i)error\"}",
+          "queryType": "range",
           "refId": "A"
         }
       ],
@@ -327,7 +329,7 @@
       },
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": ".*",
           "value": ".*"
         },
@@ -374,7 +376,7 @@
       },
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "",
           "value": ""
         },
@@ -394,7 +396,7 @@
     ]
   },
   "time": {
-    "from": "now-3h",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},

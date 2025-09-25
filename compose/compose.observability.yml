@@ -15,7 +15,6 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
-    read_only: true
 
   alloy:
     image: grafana/alloy:v1.10.2
