@@ -83,12 +83,13 @@ loki.relabel "drop_filename_caddy" {
 
 // Tail Caddy access log file and send to pipeline
 loki.source.file "caddy_access" {
-	forward_to = [loki.process.caddy_access.receiver]
-	targets    = [{
+	targets = [{
 		__path__ = "/var/log/caddy/access.log",
 		host     = sys.env("DOMAIN"),
 		job      = "caddy_access",
 	}]
+	forward_to    = [loki.process.caddy_access.receiver]
+	tail_from_end = true
 }
 
 // ----------- DOCKER (tail containers stdout) -----------
