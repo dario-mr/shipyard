@@ -306,6 +306,38 @@ loki.process "docker_logs" {
 			format = "RFC3339Nano"
 		}
 	}
+
+	// Prometheus
+	stage.match {
+		selector = "{app=\"prometheus\"}"
+
+		// Extract key=value fields
+		stage.logfmt {
+			mapping = {
+				time  = "time",
+				level = "level",
+				msg   = "msg",
+			}
+		}
+
+		stage.labels {
+			values = {level = null}
+		}
+
+		stage.template {
+			template = "{{ .msg }}"
+			source   = "msg"
+		}
+
+		stage.output {
+			source = "msg"
+		}
+
+		stage.timestamp {
+			source = "time"
+			format = "RFC3339Nano"
+		}
+	}
 }
 
 loki.relabel "docker_cleanup" {
