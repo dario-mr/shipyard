@@ -25,7 +25,6 @@ services:
       OAUTH_CLIENT_SECRET: "${OAUTH_CLIENT_SECRET}"
       ENCRYPTION_KEY: "${ENCRYPTION_KEY}"
     labels:
-      - logfmt=json
       - app=api-stress-test
 
   ichiro-family-tree:
@@ -38,7 +37,6 @@ services:
     environment:
       DB_PASSWORD: "${DB_PASSWORD}"
     labels:
-      - logfmt=json
       - app=ichiro-family-tree
 
   shortly:
@@ -51,7 +49,6 @@ services:
     environment:
       DB_PASSWORD: "${DB_PASSWORD}"
     labels:
-      - logfmt=json
       - app=shortly
 
   ichiro-walks:
@@ -64,5 +61,4 @@ services:
     environment:
       DB_PASSWORD: "${DB_PASSWORD}"
     labels:
-      - logfmt=json
       - app=ichiro-walks

@@ -5,7 +5,7 @@ loki.write "default" {
 	}
 }
 
-// ----------- CADDY (tail log file) -----------
+// ----------- Caddy access logs (from caddy log file) -----------
 loki.process "caddy_access" {
 	forward_to = [loki.relabel.drop_filename_caddy.receiver]
 
@@ -23,7 +23,7 @@ loki.process "caddy_access" {
 		}
 	}
 
-	// Parse request sub-object (remote_ip, method, uri, ...)
+	// Parse request sub-object
 	stage.json {
 		source      = "request"
 		expressions = {
@@ -33,7 +33,7 @@ loki.process "caddy_access" {
 		}
 	}
 
-	// GeoIP enrichment from remote_ip
+	// GeoIP enrichment
 	stage.geoip {
 		db      = "/usr/share/GeoIP/GeoLite2-City.mmdb"
 		source  = "remote_ip"
@@ -64,14 +64,13 @@ loki.process "caddy_access" {
 		source = "packed"
 	}
 
-	// Use Caddy's ts as the log timestamp
 	stage.timestamp {
 		source = "ts"
 		format = "Unix"
 	}
 }
 
-// Drop file-derived 'filename' to keep streams lean
+// Drop 'filename' label to keep streams lean
 loki.relabel "drop_filename_caddy" {
 	forward_to = [loki.write.default.receiver]
 
@@ -81,17 +80,17 @@ loki.relabel "drop_filename_caddy" {
 	}
 }
 
-// Tail Caddy access log file and send to pipeline
 loki.source.file "caddy_access" {
-	forward_to = [loki.process.caddy_access.receiver]
-	targets    = [{
+	targets = [{
 		__path__ = "/var/log/caddy/access.log",
 		host     = sys.env("DOMAIN"),
 		job      = "caddy_access",
 	}]
+	forward_to    = [loki.process.caddy_access.receiver]
+	tail_from_end = true
 }
 
-// ----------- DOCKER (tail containers stdout) -----------
+// ----------- Docker application logs (from containers stdout) -----------
 discovery.docker "docker_logs" {
 	host             = "unix:///var/run/docker.sock"
 	refresh_interval = "5s"
@@ -120,6 +119,11 @@ discovery.relabel "docker_logs" {
 		source_labels = ["__meta_docker_container_label_logs_scrape"]
 		target_label  = "logs_scrape"
 	}
+
+	rule {
+		target_label = "job"
+		replacement  = "docker_logs"
+	}
 }
 
 // Tail docker container logs and send to pipeline
@@ -143,13 +147,26 @@ loki.process "docker_logs" {
 		}
 	}
 
-	// Add a stable host label
 	stage.labels {
 		values = {host = sys.env("DOMAIN")}
 	}
 
 	// Parse docker JSON wrapper
 	stage.docker { }
+
+	// Plain-text apps
+	stage.match {
+		selector = "{app=~\"fail2ban|geoipupdate|portainer\"}"
+
+		stage.template {
+			source   = "packed"
+			template = `{"msg":{{ if .log }}{{ toJson .log }}{{ else }}{{ toJson .Entry }}{{ end }}}`
+		}
+
+		stage.output {
+			source = "packed"
+		}
+	}
 
 	// Drop Caddy access lines from stdout to avoid duplicates
 	stage.match {
@@ -160,17 +177,12 @@ loki.process "docker_logs" {
 		}
 	}
 
-	// Parse remaining Caddy stdout JSON (non-access)
+	// Caddy (stdout, non-access, JSON)
 	stage.match {
 		selector = "{app=\"caddy\"}"
 
 		stage.json {
-			expressions = {
-				level  = "level",
-				logger = "logger",
-				msg    = "msg",
-				ts     = "ts",
-			}
+			expressions = {level = "level", logger = "logger", msg = "msg", ts = "ts"}
 		}
 
 		stage.labels {
@@ -178,12 +190,12 @@ loki.process "docker_logs" {
 		}
 
 		stage.template {
-			template = "{{ if .logger }}{{ .logger }} — {{ end }}{{ .msg }}"
-			source   = "msg"
+			source   = "packed"
+			template = `{"msg":{{ toJson .msg }}{{ if .logger }},"logger":{{ toJson .logger }}{{ end }}}`
 		}
 
 		stage.output {
-			source = "msg"
+			source = "packed"
 		}
 
 		stage.timestamp {
@@ -192,17 +204,134 @@ loki.process "docker_logs" {
 		}
 	}
 
-	// Parse only non-Caddy JSON apps
+	// Grafana
 	stage.match {
-		selector = "{logfmt=\"json\", app!=\"caddy\"}"
+		selector = "{app=\"grafana\"}"
+
+		stage.logfmt {
+			mapping = {
+				t      = "t",
+				level  = "level",
+				logger = "logger",
+				msg    = "msg",
+				error  = "error",
+				query  = "query",
+			}
+		}
+
+		stage.labels {
+			values = {level = null}
+		}
+
+		stage.template {
+			source   = "packed"
+			template = `{"logger":{{ toJson .logger }},"msg":{{ toJson .msg }}{{ if .error }},"error":{{ toJson .error }}{{ end }}{{ if .query }},"query":{{ toJson .query }}{{ end }}}`
+		}
+
+		stage.output {
+			source = "packed"
+		}
+
+		stage.timestamp {
+			source = "t"
+			format = "RFC3339Nano"
+		}
+	}
+
+	// Alloy
+	stage.match {
+		selector = "{app=\"alloy\"}"
+
+		// Only try to parse lines that look like Alloy logfmt
+		stage.regex {
+			expression = "^ts=[^ ]+ level=[^ ]+ msg="
+		}
+
+		stage.logfmt {
+			mapping = {ts = "ts", level = "level", msg = "msg", component_id = "component_id", error = "error", node_id = "node_id"}
+		}
+
+		stage.labels {
+			values = {level = null}
+		}
+
+		stage.template {
+			source   = "packed"
+			template = `{"msg":{{ toJson .msg }}{{ if .node_id }},"node_id":{{ toJson .node_id }}{{ end }}{{ if .component_id }},"component_id":{{ toJson .component_id }}{{ end }}{{ if .error }},"error":{{ toJson .error }}{{ end }}}`
+		}
+
+		stage.output {
+			source = "packed"
+		}
+
+		stage.timestamp {
+			source = "ts"
+			format = "RFC3339Nano"
+		}
+	}
+
+	// Prometheus
+	stage.match {
+		selector = "{app=\"prometheus\"}"
+
+		stage.logfmt {
+			mapping = {time = "time", level = "level", msg = "msg"}
+		}
+
+		stage.labels {
+			values = {level = null}
+		}
+
+		stage.template {
+			source   = "packed"
+			template = `{{ toJson (dict
+                "msg"    .msg
+            ) }}`
+		}
+
+		stage.output {
+			source = "packed"
+		}
+
+		stage.timestamp {
+			source = "time"
+			format = "RFC3339Nano"
+		}
+	}
+
+	// Watchtower
+	stage.match {
+		selector = "{app=\"watchtower\"}"
+
+		stage.regex {
+			expression = "time=\"(?P<time>[^\"]+)\"\\s+level=(?P<level>\\w+)\\s+msg=\"(?P<msg>[^\"]+)\"\\s+Failed=(?P<failed>\\d+)\\s+Scanned=(?P<scanned>\\d+)\\s+Updated=(?P<updated>\\d+)\\s+notify=(?P<notify>\\w+)"
+		}
+
+		stage.timestamp {
+			source = "time"
+			format = "RFC3339Nano"
+		}
+
+		stage.labels {
+			values = {level = null}
+		}
+
+		stage.template {
+			source   = "packed"
+			template = `{"msg":{{ toJson .msg }},"level":{{ toJson .level }},"Failed":{{ .failed }},"Scanned":{{ .scanned }},"Updated":{{ .updated }},"notify":{{ toJson .notify }}}`
+		}
+
+		stage.output {
+			source = "packed"
+		}
+	}
+
+	// All other JSON apps (e.g. spring boot apps)
+	stage.match {
+		selector = "{app!~\"^(caddy|grafana|prometheus|alloy|fail2ban|geoipupdate|portainer|watchtower)$\"}"
 
 		stage.json {
-			expressions = {
-				level  = "level",
-				logger = "logger_name",
-				msg    = "message",
-				ts     = "[\"@timestamp\"]",
-			}
+			expressions = {level = "level", logger = "logger_name", msg = "message", ts = "[\"@timestamp\"]"}
 		}
 
 		// Fallbacks if apps use different ts keys
@@ -222,126 +351,20 @@ loki.process "docker_logs" {
 			values = {level = null}
 		}
 
-		// build a compact line that includes logger + message
 		stage.template {
-			template = "{{ .logger }} — {{ .msg }}"
-			source   = "msg"
+			source   = "packed"
+			template = `{{ toJson (dict
+              "logger" .logger
+              "msg"    .msg
+            ) }}`
 		}
 
 		stage.output {
-			source = "msg"
+			source = "packed"
 		}
 
 		stage.timestamp {
 			source = "ts"
-			format = "RFC3339Nano"
-		}
-	}
-
-	// Grafana
-	stage.match {
-		selector = "{app=\"grafana\"}"
-
-		// Extract key=value fields
-		stage.logfmt {
-			mapping = {
-				t        = "t",
-				level    = "level",
-				logger   = "logger",
-				msg      = "msg",
-				duration = "duration",
-				error    = "error",
-				query    = "query",
-			}
-		}
-
-		stage.labels {
-			values = {level = null}
-		}
-
-		stage.template {
-			template = "{{ .logger }} — {{ .msg }}{{ if .error }}\nerror={{ .error }}{{ if .query }}\nquery={{ .query }}{{ end }}{{ end }}"
-			source   = "msg"
-		}
-
-		stage.output {
-			source = "msg"
-		}
-
-		stage.timestamp {
-			source = "t"
-			format = "RFC3339Nano"
-		}
-	}
-
-	// Alloy
-	stage.match {
-		selector = "{app=\"alloy\"}"
-
-		// Only try to parse lines that look like Alloy logfmt
-		stage.regex {
-			expression = "^ts=[^ ]+ level=[^ ]+ msg="
-		}
-
-		// Extract key=value fields
-		stage.logfmt {
-			mapping = {
-				ts           = "ts",
-				level        = "level",
-				msg          = "msg",
-				component_id = "component_id",
-				error        = "error",
-				node_id      = "node_id",
-			}
-		}
-
-		stage.labels {
-			values = {level = null}
-		}
-
-		stage.template {
-			template = "{{ if .node_id }}{{ .node_id }} — {{ end }}{{ if .component_id }}{{ .component_id }} — {{ end }}{{ .msg }}{{ if .error }}\nerror={{ .error }}{{ end }}"
-			source   = "msg"
-		}
-
-		stage.output {
-			source = "msg"
-		}
-
-		stage.timestamp {
-			source = "ts"
-			format = "RFC3339Nano"
-		}
-	}
-
-	// Prometheus
-	stage.match {
-		selector = "{app=\"prometheus\"}"
-
-		// Extract key=value fields
-		stage.logfmt {
-			mapping = {
-				time  = "time",
-				level = "level",
-				msg   = "msg",
-			}
-		}
-
-		stage.labels {
-			values = {level = null}
-		}
-
-		stage.template {
-			template = "{{ .msg }}"
-			source   = "msg"
-		}
-
-		stage.output {
-			source = "msg"
-		}
-
-		stage.timestamp {
-			source = "time"
 			format = "RFC3339Nano"
 		}
 	}
@@ -352,6 +375,6 @@ loki.relabel "docker_cleanup" {
 
 	rule {
 		action = "labeldrop"
-		regex  = "logfmt|logs_scrape"
+		regex  = "logs_scrape"
 	}
 }

@@ -22,6 +22,19 @@
   "links": [],
   "panels": [
     {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 9,
+      "panels": [],
+      "title": "Logs",
+      "type": "row"
+    },
+    {
       "datasource": {
         "type": "loki",
         "uid": "loki"
@@ -30,14 +43,14 @@
         "h": 16,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 1
       },
       "id": 2,
       "options": {
         "dedupStrategy": "none",
         "enableLogDetails": true,
         "prettifyLogMessage": false,
-        "showCommonLabels": true,
+        "showCommonLabels": false,
         "showLabels": true,
         "showTime": true,
         "sortOrder": "Descending",
@@ -50,13 +63,63 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "{app=~\"$app\", level=~\"(?i)$level\"} |~ \"(?i)(?:${search:regex}|^$)\"",
+          "expr": "{job=\"docker_logs\", app=~\"$app\", level=~\"(?i)$level\"}\n| json\n|~ \"(?i)(?:${search:regex}|^$)\"\n| line_format `\n{{- if .logger }}{{ .logger }} - {{ end -}}\n{{- .msg -}}\n{{- if .Failed }}, Failed={{ .Failed }}{{ end -}}\n{{- if .Scanned }} Scanned={{ .Scanned }}{{ end -}}\n{{- if .Updated }} Updated={{ .Updated }}{{ end -}}\n{{- if .notify }} notify={{ .notify }}{{ end -}}\n{{- if .component_id }}{{ printf \"\\ncomponent_id=%s\" .component_id }}{{ end -}}\n{{- if .node_id }}{{ printf \"\\nnode_id=%s\" .node_id }}{{ end -}}\n{{- if .error }}{{ printf \"\\nerror=%s\" .error }}{{- if .query }}{{ printf \"\\nquery=%s\" .query }}{{ end -}}{{ end -}}\n`",
           "queryType": "range",
-          "refId": "A"
+          "refId": "JSON apps"
         }
       ],
       "title": "Recent logs",
       "type": "logs"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "id": 6,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "{job=\"docker_logs\", app=~\"$app\", level=~\"(?i)error\"}\n| json\n| line_format `\n{{- if .logger }}{{ .logger }} - {{ end -}}\n{{- .msg -}}\n{{- if .Failed }}, Failed={{ .Failed }}{{ end -}}\n{{- if .Scanned }} Scanned={{ .Scanned }}{{ end -}}\n{{- if .Updated }} Updated={{ .Updated }}{{ end -}}\n{{- if .notify }} notify={{ .notify }}{{ end -}}\n{{- if .component_id }}{{ printf \"\\ncomponent_id=%s\" .component_id }}{{ end -}}\n{{- if .node_id }}{{ printf \"\\nnode_id=%s\" .node_id }}{{ end -}}\n{{- if .error }}{{ printf \"\\nerror=%s\" .error }}{{- if .query }}{{ printf \"\\nquery=%s\" .query }}{{ end -}}{{ end -}}\n`",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Recent errors",
+      "type": "logs"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 31
+      },
+      "id": 8,
+      "panels": [],
+      "title": "Ingestion overview",
+      "type": "row"
     },
     {
       "datasource": {
@@ -124,7 +187,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 16
+        "y": 32
       },
       "id": 3,
       "options": {
@@ -146,7 +209,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "sum by (app) (rate({app=~\"$app\"}[$__interval]))",
+          "expr": "sum by (app) (rate({job=\"docker_logs\", app=~\"$app\"}[$__interval]))",
           "legendFormat": "{{app}}",
           "queryType": "range",
           "refId": "A"
@@ -220,7 +283,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 16
+        "y": 32
       },
       "id": 4,
       "options": {
@@ -242,7 +305,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "sum by (app) (rate({app=~\"$app\", level=~\"(?i)error\"}[$__interval]))",
+          "expr": "sum by (app) (rate({job=\"docker_logs\", app=~\"$app\", level=~\"(?i)error\"}[$__interval]))",
           "legendFormat": "{{app}}",
           "queryType": "range",
           "refId": "A"
@@ -256,22 +319,80 @@
         "type": "loki",
         "uid": "loki"
       },
-      "gridPos": {
-        "h": 14,
-        "w": 24,
-        "x": 0,
-        "y": 24
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
       },
-      "id": 6,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 40
+      },
+      "id": 10,
       "options": {
-        "dedupStrategy": "none",
-        "enableLogDetails": true,
-        "prettifyLogMessage": false,
-        "showCommonLabels": true,
-        "showLabels": true,
-        "showTime": true,
-        "sortOrder": "Descending",
-        "wrapLogMessage": true
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "targets": [
         {
@@ -280,13 +401,109 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "{app=~\"$app\", level=~\"(?i)error\"}",
+          "expr": "count by (app) (count_over_time({job=\"docker_logs\", app=~\"$app\"}[5m]))",
+          "legendFormat": "{{app}}",
           "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "Recent errors",
-      "type": "logs"
+      "title": "Active streams by app",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "description": "Counts the number of distinct Loki streams coming from the Docker pipeline. \nIt shows how many unique label sets (streams) produced logs within the past 5 minutes. \nUseful to catch stream-cardinality spikes from container churn or label explosions.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 40
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "count(count_over_time({job=\"docker_logs\"}[5m]))",
+          "legendFormat": "streams",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Total active streams",
+      "type": "timeseries"
     }
   ],
   "refresh": "",
@@ -329,7 +546,7 @@
       },
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": ".*",
           "value": ".*"
         },
@@ -376,7 +593,7 @@
       },
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "",
           "value": ""
         },
@@ -403,6 +620,6 @@
   "timezone": "",
   "title": "Application logs",
   "uid": "application-logs",
-  "version": 3,
+  "version": 11,
   "weekStart": ""
 }
