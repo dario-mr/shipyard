@@ -154,15 +154,13 @@ loki.process "docker_logs" {
 	stage.match {
 		selector = "{app=~\"fail2ban|geoipupdate|portainer\"}"
 
-		// Use the raw Docker message as the template input
 		stage.template {
-			source   = "log"
-			template = `{"msg":{{ toJson . }}}`
+			source   = "packed"
+			template = `{"msg":{{ if .log }}{{ toJson .log }}{{ else }}{{ toJson .Entry }}{{ end }}}`
 		}
 
-		// Replace the line with the templated JSON
 		stage.output {
-			source = "log"
+			source = "packed"
 		}
 	}
 

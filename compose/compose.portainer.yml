@@ -17,6 +17,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
+    environment:
+      TZ: ${TIMEZONE}
     security_opt:
       - no-new-privileges:true
     read_only: true
