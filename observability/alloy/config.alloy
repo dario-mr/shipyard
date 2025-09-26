@@ -152,7 +152,7 @@ loki.process "docker_logs" {
 
 	// Plain-text apps
 	stage.match {
-		selector = "{app=~\"fail2ban|geoipupdate|portainer\"}"
+		selector = "{app=~\"fail2ban|geoipupdate\"}"
 
 		stage.template {
 			source   = "packed"
@@ -315,6 +315,66 @@ loki.process "docker_logs" {
 		stage.template {
 			source   = "packed"
 			template = `{"msg":{{ toJson .msg }},"level":{{ toJson .level }},"Failed":{{ .failed }},"Scanned":{{ .scanned }},"Updated":{{ .updated }},"notify":{{ toJson .notify }}}`
+		}
+
+		stage.output {
+			source = "packed"
+		}
+	}
+
+	// Portainer
+	stage.match {
+		selector = "{app=\"portainer\"}"
+
+		// Remove ANSI color codes
+		stage.replace {
+			source     = "log"
+			expression = "\x1b\\[[0-9;]*m"
+			replace    = ""
+		}
+
+		stage.regex {
+			source     = "log"
+			expression = "^(?P<ts>\\d{4}/\\d{2}/\\d{2}\\s+\\d{2}:\\d{2}[AP]M)\\s+(?P<level>[A-Z]+)\\s+(?P<caller>\\S+?):(?P<line>\\d+)\\s+>\\s+(?P<msg>[^|]+?)(?:\\s*\\|\\s*(?P<attrs>.*))?$"
+		}
+
+		stage.timestamp {
+			source = "ts"
+			format = "2006/01/02 03:04PM"
+		}
+
+		// Normalize log level
+		stage.replace {
+			source     = "level"
+			expression = "^(?i)inf$"
+			replace    = "info"
+		}
+
+		stage.replace {
+			source     = "level"
+			expression = "^(?i)wrn$"
+			replace    = "warn"
+		}
+
+		stage.replace {
+			source     = "level"
+			expression = "^(?i)dbg$"
+			replace    = "debug"
+		}
+
+		stage.replace {
+			source     = "level"
+			expression = "^(?i)err$"
+			replace    = "error"
+		}
+
+		stage.labels {
+			values = {level = "level"}
+		}
+
+		stage.template {
+			source   = "packed"
+			template = `{"msg":{{ toJson .extracted.msg }},"level":{{ toJson .extracted.level }},"caller":{{ toJson .extracted.caller }},"line":{{ .extracted.line }}{{ if .extracted.attrs }},"attrs":{{ toJson .extracted.attrs }}{{ end }}}`
 		}
 
 		stage.output {
