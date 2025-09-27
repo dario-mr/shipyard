@@ -7,33 +7,7 @@ around it.
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    Internet["Internet"]
-    Caddy["Caddy<br/><span style='font-size:13px'>reverse proxy</span>"]
-    Gateway["Gateway<br/><span style='font-size:13px'>routing</span>"]
-    Backends["Backends<br/><span style='font-size:13px'>apps & services</span>"]
-    fail2ban["fail2ban<br/><span style='font-size:13px'>ban offenders</span>"]
-    Alloy["Alloy<br/><span style='font-size:13px'>log agent</span>"]
-    Loki["Loki<br/><span style='font-size:13px'>log database</span>"]
-    Prometheus["Prometheus<br/><span style='font-size:13px'>metrics scraper</span>"]
-    Grafana["Grafana<br/><span style='font-size:13px'>dashboards</span>"]
-    Internet --> Caddy
-
-    subgraph Core
-        Caddy -->|forwards| Gateway -->|routes| Backends
-        fail2ban -->|tails| Caddy
-    end
-
-    subgraph Observability
-        Alloy -->|tails| Caddy
-        Alloy -->|tails| Backends
-        Alloy -->|ships| Loki
-        Grafana -->|queries logs| Loki
-        Grafana -->|queries metrics| Prometheus
-        Prometheus -->|scrapes| Backends
-    end
-```
+![architecture.svg](diagrams/architecture.svg)
 
 ## Components
 
