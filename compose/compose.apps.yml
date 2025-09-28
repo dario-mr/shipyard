@@ -20,6 +20,8 @@ services:
     networks:
       - backend
     environment:
+      DB_USER: "${DB_USER}"
+      DB_PORT: "${DB_PORT}"
       DB_PASSWORD: "${DB_PASSWORD}"
       OAUTH_CLIENT_ID: "${OAUTH_CLIENT_ID}"
       OAUTH_CLIENT_SECRET: "${OAUTH_CLIENT_SECRET}"
@@ -35,6 +37,8 @@ services:
     networks:
       - backend
     environment:
+      DB_USER: "${DB_USER}"
+      DB_PORT: "${DB_PORT}"
       DB_PASSWORD: "${DB_PASSWORD}"
     labels:
       - app=ichiro-family-tree
@@ -47,6 +51,8 @@ services:
     networks:
       - backend
     environment:
+      DB_USER: "${DB_USER}"
+      DB_PORT: "${DB_PORT}"
       DB_PASSWORD: "${DB_PASSWORD}"
     labels:
       - app=shortly
@@ -59,6 +65,8 @@ services:
     networks:
       - backend
     environment:
+      DB_USER: "${DB_USER}"
+      DB_PORT: "${DB_PORT}"
       DB_PASSWORD: "${DB_PASSWORD}"
     labels:
       - app=ichiro-walks
