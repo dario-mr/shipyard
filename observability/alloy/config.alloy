@@ -331,7 +331,7 @@ loki.process "docker_logs" {
 		selector = "{app!~\"^(caddy|grafana|prometheus|alloy|fail2ban|geoipupdate|portainer|watchtower)$\"}"
 
 		stage.json {
-			expressions = {level = "level", logger = "logger_name", msg = "message", ts = "[\"@timestamp\"]"}
+			expressions = {level = "level", logger = "logger_name", msg = "message", ts = "[\"@timestamp\"]", stack_trace = "stack_trace"}
 		}
 
 		// Fallbacks if apps use different ts keys
@@ -353,10 +353,7 @@ loki.process "docker_logs" {
 
 		stage.template {
 			source   = "packed"
-			template = `{{ toJson (dict
-              "logger" .logger
-              "msg"    .msg
-            ) }}`
+			template = `{"msg":{{ toJson .msg }},"logger":{{ toJson .logger }}{{ if .stack_trace }},"stack_trace":{{ toJson .stack_trace }}{{ end }}}`
 		}
 
 		stage.output {
