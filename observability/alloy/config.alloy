@@ -318,7 +318,7 @@ loki.process "docker_logs" {
 
 		stage.template {
 			source   = "packed"
-			template = `{"msg":{{ toJson .msg }},"level":{{ toJson .level }},"Failed":{{ .failed }},"Scanned":{{ .scanned }},"Updated":{{ .updated }},"notify":{{ toJson .notify }}}`
+			template = `{"msg":{{ toJson .msg }},"level":{{ toJson .level }}{{ if .failed }},"Failed":{{ toJson .failed }}{{ if .scanned }},"Scanned":{{ toJson .scanned }}{{ if .updated }},"Updated":{{ toJson .updated }}{{ if .notify }},"notify":{{ toJson .notify }}}`
 		}
 
 		stage.output {
