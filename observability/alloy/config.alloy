@@ -304,7 +304,7 @@ loki.process "docker_logs" {
 		selector = "{app=\"watchtower\"}"
 
 		stage.regex {
-			expression = "time=\"(?P<time>[^\"]+)\"\\s+level=(?P<level>\\w+)\\s+msg=\"(?P<msg>[^\"]+)\"\\s+Failed=(?P<failed>\\d+)\\s+Scanned=(?P<scanned>\\d+)\\s+Updated=(?P<updated>\\d+)\\s+notify=(?P<notify>\\w+)"
+			expression = "^time=\"(?P<time>[^\"]+)\"\\s+level=(?P<level>\\w+)\\s+msg=\"(?P<msg>[^\"]+)\"(?:\\s+Failed=(?P<failed>\\d+))?(?:\\s+Scanned=(?P<scanned>\\d+))?(?:\\s+Updated=(?P<updated>\\d+))?(?:\\s+notify=(?P<notify>\\w+))?$"
 		}
 
 		stage.timestamp {
@@ -318,7 +318,7 @@ loki.process "docker_logs" {
 
 		stage.template {
 			source   = "packed"
-			template = `{"msg":{{ toJson .msg }},"level":{{ toJson .level }}{{ if .failed }},"Failed":{{ toJson .failed }}{{ if .scanned }},"Scanned":{{ toJson .scanned }}{{ if .updated }},"Updated":{{ toJson .updated }}{{ if .notify }},"notify":{{ toJson .notify }}}`
+			template = `{"msg":{{ toJson .msg }},"level":{{ toJson .level }}{{ if .failed }},"Failed":{{ toJson .failed }}{{ end }}{{ if .scanned }},"Scanned":{{ toJson .scanned }}{{ end }}{{ if .updated }},"Updated":{{ toJson .updated }}{{ end }}{{ if .notify }},"notify":{{ toJson .notify }}{{ end }}}`
 		}
 
 		stage.output {
