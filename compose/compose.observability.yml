@@ -101,6 +101,8 @@ services:
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.52.0
+    labels:
+      - app=cadvisor
     restart: unless-stopped
     networks: [ backend ]
     volumes:
@@ -111,6 +113,8 @@ services:
 
   node-exporter:
     image: prom/node-exporter:v1.9.1
+    labels:
+      - app=node-exporter
     restart: unless-stopped
     pid: host
     networks: [ backend ]

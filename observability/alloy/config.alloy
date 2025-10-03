@@ -326,9 +326,38 @@ loki.process "docker_logs" {
 		}
 	}
 
+	// node-exporter
+	stage.match {
+		selector = "{app=\"node-exporter\"}"
+
+		stage.logfmt {
+			mapping = {time = "time", level = "level", msg = "msg"}
+		}
+
+		stage.labels {
+			values = {level = null}
+		}
+
+		stage.template {
+			source   = "packed"
+			template = `{{ toJson (dict
+              "msg"    .msg
+            ) }}`
+		}
+
+		stage.output {
+			source = "packed"
+		}
+
+		stage.timestamp {
+			source = "time"
+			format = "RFC3339Nano"
+		}
+	}
+
 	// All other JSON apps (e.g. spring boot apps)
 	stage.match {
-		selector = "{app!~\"^(caddy|grafana|prometheus|alloy|fail2ban|geoipupdate|portainer|watchtower)$\"}"
+		selector = "{app!~\"^(caddy|grafana|prometheus|alloy|fail2ban|geoipupdate|portainer|watchtower|node-exporter)$\"}"
 
 		stage.json {
 			expressions = {level = "level", logger = "logger_name", msg = "message", ts = "[\"@timestamp\"]", stack_trace = "stack_trace"}
