@@ -359,18 +359,22 @@ loki.process "docker_logs" {
 	stage.match {
 		selector = "{app=\"cadvisor\"}"
 
-		// I1003 16:14:29.985441       1 factory.go:103] Registering Raw factory
 		stage.regex {
-			expression = "^(?P<level>[IWEF])(?P<mm>\\d{2})(?P<dd>\\d{2})\\s+(?P<clock>\\d{2}:\\d{2}:\\d{2}\\.\\d{6})\\s+\\d+\\s+(?P<file>[^\\s:]+):\\d+\\]\\s+(?P<msg>.*)$"
+			expression = "^(?P<level>[IWEF])\\d{4}\\s+\\d{2}:\\d{2}:\\d{2}\\.\\d{6}\\s+\\d+\\s+(?P<file>[^\\s:]+):\\d+\\]\\s+(?P<msg>.*)$"
+		}
+
+		stage.template {
+			source   = "severity"
+			template = `{{ default .level (index (dict "I" "INFO" "W" "WARN" "E" "ERROR" "F" "ERROR") .level) }}`
 		}
 
 		stage.labels {
-			values = {level = null}
+			values = {level = "severity"}
 		}
 
 		stage.template {
 			source   = "packed"
-			template = `{{ toJson (dict "klog_time" (printf "%s-%s %s" .mm .dd .clock) "level" (default .level (index (dict "I" "INFO" "W" "WARN" "E" "ERROR" "F" "ERROR") .level)) "msg" .msg "file" .file) }}`
+			template = `{{ toJson (dict "msg" .msg "file" .file) }}`
 		}
 
 		stage.output {
