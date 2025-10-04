@@ -98,3 +98,32 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.52.0
+    labels:
+      - app=cadvisor
+    restart: unless-stopped
+    networks: [ backend ]
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+
+  node-exporter:
+    image: prom/node-exporter:v1.9.1
+    labels:
+      - app=node-exporter
+    restart: unless-stopped
+    pid: host
+    networks: [ backend ]
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($|/)'
