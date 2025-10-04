@@ -355,9 +355,32 @@ loki.process "docker_logs" {
 		}
 	}
 
+	// cAdvisor
+	stage.match {
+		selector = "{app=\"cadvisor\"}"
+
+		// I1003 16:14:29.985441       1 factory.go:103] Registering Raw factory
+		stage.regex {
+			expression = "^(?P<level>[IWEF])(?P<mmdd>\\d{4})\\s+(?P<clock>\\d{2}:\\d{2}:\\d{2}\\.\\d{6})\\s+\\d+\\s+(?P<file>[^\\s:]+):(?P<line>\\d+)\\]\\s+(?P<msg>.*)$"
+		}
+
+		stage.labels {
+			values = {level = null}
+		}
+
+		stage.template {
+			source   = "packed"
+			template = `{{ toJson (dict "klog_time" (printf "%s-%s" .mmdd .clock) "level" .level "msg" .msg "file" .file "line" .line) }}`
+		}
+
+		stage.output {
+			source = "packed"
+		}
+	}
+
 	// All other JSON apps (e.g. spring boot apps)
 	stage.match {
-		selector = "{app!~\"^(caddy|grafana|prometheus|alloy|fail2ban|geoipupdate|portainer|watchtower|node-exporter)$\"}"
+		selector = "{app!~\"^(caddy|grafana|prometheus|alloy|fail2ban|geoipupdate|portainer|watchtower|node-exporter|cadvisor)$\"}"
 
 		stage.json {
 			expressions = {level = "level", logger = "logger_name", msg = "message", ts = "[\"@timestamp\"]", stack_trace = "stack_trace"}
