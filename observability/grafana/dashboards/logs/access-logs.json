@@ -637,8 +637,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -746,8 +745,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -844,8 +842,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1058,8 +1055,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1153,8 +1149,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1312,8 +1307,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1365,7 +1359,8 @@
   "tags": [
     "caddy",
     "loki",
-    "access"
+    "access",
+    "alloy"
   ],
   "templating": {
     "list": [
@@ -1408,6 +1403,6 @@
   "timezone": "browser",
   "title": "Access logs",
   "uid": "access-logs",
-  "version": 5,
+  "version": 7,
   "weekStart": ""
 }

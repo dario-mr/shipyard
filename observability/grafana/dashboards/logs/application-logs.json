@@ -170,8 +170,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -266,8 +265,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -363,8 +361,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -458,8 +455,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -512,7 +508,8 @@
     "loki",
     "logs",
     "application",
-    "docker"
+    "docker",
+    "alloy"
   ],
   "templating": {
     "list": [
@@ -620,6 +617,6 @@
   "timezone": "",
   "title": "Application logs",
   "uid": "application-logs",
-  "version": 11,
+  "version": 13,
   "weekStart": ""
 }
