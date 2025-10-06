@@ -303,8 +303,8 @@ loki.process "docker_logs" {
 	stage.match {
 		selector = "{app=\"watchtower\"}"
 
-		stage.regex {
-			expression = "^time=\"(?P<time>[^\"]+)\"\\s+level=(?P<level>\\w+)\\s+msg=\"(?P<msg>[^\"]+)\"(?:\\s+Failed=(?P<failed>\\d+))?(?:\\s+Scanned=(?P<scanned>\\d+))?(?:\\s+Updated=(?P<updated>\\d+))?(?:\\s+notify=(?P<notify>\\w+))?$"
+		stage.json {
+			expressions = {time = "time", level = "level", msg = "msg", Failed = "Failed", Scanned = "Scanned", Updated = "Updated", notify = "notify"}
 		}
 
 		stage.timestamp {
@@ -318,7 +318,63 @@ loki.process "docker_logs" {
 
 		stage.template {
 			source   = "packed"
-			template = `{"msg":{{ toJson .msg }},"level":{{ toJson .level }}{{ if .failed }},"Failed":{{ toJson .failed }}{{ end }}{{ if .scanned }},"Scanned":{{ toJson .scanned }}{{ end }}{{ if .updated }},"Updated":{{ toJson .updated }}{{ end }}{{ if .notify }},"notify":{{ toJson .notify }}{{ end }}}`
+			template = `{"msg":{{ toJson .msg }}{{ if .Failed }},"Failed":{{ toJson .Failed }}{{ end }}{{ if .Scanned }},"Scanned":{{ toJson .Scanned }}{{ end }}{{ if .Updated }},"Updated":{{ toJson .Updated }}{{ end }}{{ if .notify }},"notify":{{ toJson .notify }}{{ end }}}`
+		}
+
+		stage.output {
+			source = "packed"
+		}
+	}
+
+	// node-exporter
+	stage.match {
+		selector = "{app=\"node-exporter\"}"
+
+		stage.logfmt {
+			mapping = {time = "time", level = "level", msg = "msg"}
+		}
+
+		stage.labels {
+			values = {level = null}
+		}
+
+		stage.template {
+			source   = "packed"
+			template = `{{ toJson (dict
+              "msg"    .msg
+            ) }}`
+		}
+
+		stage.output {
+			source = "packed"
+		}
+
+		stage.timestamp {
+			source = "time"
+			format = "RFC3339Nano"
+		}
+	}
+
+	// cAdvisor
+	stage.match {
+		selector = "{app=\"cadvisor\"}"
+
+		stage.regex {
+			expression = "^(?P<level>[IWEF])\\d{4}\\s+\\d{2}:\\d{2}:\\d{2}\\.\\d{6}\\s+\\d+\\s+(?P<file>[^\\s:]+):\\d+\\]\\s+(?P<msg>.*)$"
+		}
+
+		stage.template {
+			source   = "severity"
+			template = `{{ default .level (index (dict "I" "INFO" "W" "WARN" "E" "ERROR" "F" "ERROR") .level) }}`
+		}
+
+		stage.labels {
+			values = {level = "severity"}
+		}
+
+		stage.template {
+			source   = "packed"
+			template = `{{ toJson (dict "msg" .msg "file" .file) }}`
 		}
 
 		stage.output {
@@ -328,7 +384,7 @@ loki.process "docker_logs" {
 
 	// All other JSON apps (e.g. spring boot apps)
 	stage.match {
-		selector = "{app!~\"^(caddy|grafana|prometheus|alloy|fail2ban|geoipupdate|portainer|watchtower)$\"}"
+		selector = "{app!~\"^(caddy|grafana|prometheus|alloy|fail2ban|geoipupdate|portainer|watchtower|node-exporter|cadvisor)$\"}"
 
 		stage.json {
 			expressions = {level = "level", logger = "logger_name", msg = "message", ts = "[\"@timestamp\"]", stack_trace = "stack_trace"}
