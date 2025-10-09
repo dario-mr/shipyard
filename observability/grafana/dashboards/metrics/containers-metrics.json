@@ -532,7 +532,7 @@
           },
           "editorMode": "code",
           "expr": "rate(container_fs_reads_bytes_total{name=~\"$container\"}[5m])",
-          "legendFormat": "{{container_label_com_docker_compose_replace}}",
+          "legendFormat": "{{name}}",
           "range": true,
           "refId": "A"
         }
@@ -624,7 +624,7 @@
           },
           "editorMode": "code",
           "expr": "rate(container_fs_writes_bytes_total{name=~\"$container\"}[5m])",
-          "legendFormat": "{{container_label_com_docker_compose_replace}}",
+          "legendFormat": "{{name}}",
           "range": true,
           "refId": "B"
         }
@@ -729,7 +729,7 @@
           },
           "editorMode": "code",
           "expr": "changes(container_start_time_seconds{name=~\"$container\"}[$__range])",
-          "legendFormat": "{{container_label_com_docker_compose_replace}}",
+          "legendFormat": "{{name}}",
           "range": true,
           "refId": "A"
         }
@@ -909,7 +909,7 @@
     "list": [
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
             "All"
           ],
@@ -937,13 +937,13 @@
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Containers metrics",
   "uid": "containers-metrics",
-  "version": 5,
+  "version": 7,
   "weekStart": ""
 }
