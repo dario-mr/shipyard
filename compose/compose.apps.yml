@@ -70,3 +70,12 @@ services:
       DB_PASSWORD: "${DB_PASSWORD}"
     labels:
       - app=ichiro-walks
+  htmx-demo:
+    image: dariomr8/htmx-demo:latest
+    restart: unless-stopped
+    expose:
+      - "8087"
+    networks:
+      - backend
+    labels:
+      - app=htmx-demo
