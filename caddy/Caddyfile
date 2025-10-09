@@ -24,7 +24,7 @@
 		path /assets/* /static/* /icons/* /locales/*
 		path /robots.txt /sitemap.xml /manifest.json /site.webmanifest
 		path /apple-touch-icon*.png /.well-known/acme-challenge/*
-		path /api-stress-test/* /ichiro-family-tree/* /shortly/* /ichiro-walks/* /portainer/* /grafana/*
+		path /api-stress-test/* /ichiro-family-tree/* /shortly/* /ichiro-walks/* /portainer/* /grafana/* /htmx-demo/*
 	}
 
 	# Allowed → rate limit, then route to the right upstream
@@ -40,7 +40,7 @@
 			# App paths (stricter)
 			zone per_ip_app {
 				match {
-					path /api-stress-test/* /ichiro-family-tree/* /shortly/* /ichiro-walks/*
+					path /api-stress-test/* /ichiro-family-tree/* /shortly/* /ichiro-walks/* /htmx-demo/*
 				}
 				key {remote_host}
 				events 100

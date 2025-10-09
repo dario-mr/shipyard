@@ -25,6 +25,7 @@ scrape_configs:
           - shortly:8082
           - api-stress-test:8083
           - ichiro-walks:8085
+          - htmx-demo:8087
 
   - job_name: 'cadvisor'
     scrape_interval: 15s
