@@ -7,4 +7,5 @@ allow_federation = false
 allow_registration = true
 registration_token = "${CONDUIT_REGISTRATION_TOKEN}"
 
+database_backend = "rocksdb"
 database_path = "/data"
