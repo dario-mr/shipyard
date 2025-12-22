@@ -70,5 +70,5 @@
 }
 
 matrix.{$DOMAIN} {
-	reverse_proxy 127.0.0.1:6167
+	reverse_proxy conduit:6167
 }

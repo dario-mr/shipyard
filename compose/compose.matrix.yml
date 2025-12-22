@@ -7,5 +7,6 @@ services:
     volumes:
       - ./conduit/generated:/config:ro
       - conduit-data:/data
-    ports:
-      - "127.0.0.1:6167:6167"
+    networks:
+      - backend
+
