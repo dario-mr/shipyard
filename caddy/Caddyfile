@@ -70,5 +70,14 @@
 }
 
 matrix.{$DOMAIN} {
+	@matrix_well_known {
+		path /.well-known/matrix/client
+	}
+	handle @matrix_well_known {
+		header Content-Type application/json
+		header Access-Control-Allow-Origin *
+		respond `{"m.homeserver":{"base_url":"https://matrix.{$DOMAIN}"}}` 200
+	}
+
 	reverse_proxy conduit:6167
 }
