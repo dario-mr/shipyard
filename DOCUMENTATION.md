@@ -34,6 +34,7 @@ To keep secrets out of git, we generate the final config using `envsubst` at dep
 ### Required environment variables
 
 DOMAIN=dariolab.com
+
 CONDUIT_REGISTRATION_TOKEN=change-me
 
 ### Generate the config
