@@ -1,0 +1,11 @@
+services:
+  conduit:
+    image: matrixconduit/matrix-conduit:v0.10.9
+    restart: unless-stopped
+    environment:
+      CONDUIT_CONFIG: /config/conduit.toml
+    volumes:
+      - ./conduit/generated:/config:ro
+      - conduit-data:/data
+    ports:
+      - "127.0.0.1:6167:6167"
