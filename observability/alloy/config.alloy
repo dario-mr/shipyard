@@ -386,31 +386,33 @@ loki.process "docker_logs" {
 stage.match {
   selector = "{app=\"conduit\"}"
 
-  // Strip ANSI color codes
+  // If ANSI is real ESC codes
   stage.replace {
     expression = "\\x1b\\[[0-9;]*[A-Za-z]"
     replace    = ""
   }
 
-  // Try to parse (timestamp optional)
+  // If ANSI has been turned into literal "[33m" / "[0m" etc
+  stage.replace {
+    expression = "\\[[0-9;]*m"
+    replace    = ""
+  }
+
   stage.regex {
     expression = "^(?:(?P<ts>\\S+)\\s+)?(?P<level>[A-Z]+)\\s+(?:(?P<logger>[^\\s:]+):\\s+)?(?P<msg>.*)$"
   }
 
-  // Create JSON line ALWAYS:
-  // - if regex matched -> .msg/.logger/.level exist
-  // - else fallback -> original line in msg
+  stage.labels {
+    values = { level = "level" }
+  }
+
+  // Always output JSON; if regex didn't match, msg falls back to the cleaned line
   stage.template {
     source   = "packed"
     template = `{"msg":{{ if .msg }}{{ toJson .msg }}{{ else }}{{ toJson .Entry }}{{ end }},"logger":{{ toJson .logger }},"level":{{ toJson .level }}}`
   }
 
   stage.output { source = "packed" }
-
-  // Label only when present (if regex didn't match, level will just be empty/missing)
-  stage.labels {
-    values = { level = "level" }
-  }
 }
 
 	// All other JSON apps (e.g. spring boot apps)
