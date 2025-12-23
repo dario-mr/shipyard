@@ -6,7 +6,6 @@ services:
     restart: unless-stopped
     environment:
       CONDUIT_CONFIG: /config/conduit.toml
-    command: ["conduit", "run", "--log.format=json"]
     volumes:
       - ./conduit/generated:/config:ro
       - conduit-data:/data
