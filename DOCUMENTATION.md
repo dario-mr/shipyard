@@ -20,7 +20,7 @@ docker buildx build \
   --push .
 ```
 
-## Matrix (Conduit) configuration generation
+## Matrix Conduit (private chat)
 
 Conduit does not expand environment variables inside `conduit.toml`.
 To keep secrets out of git, we generate the final config using `envsubst` at deploy time.
@@ -33,8 +33,7 @@ To keep secrets out of git, we generate the final config using `envsubst` at dep
 
 ### Required environment variables
 
-DOMAIN=dariolab.com
-
+DOMAIN=dariolab.com  
 CONDUIT_REGISTRATION_TOKEN=change-me
 
 ### Generate the config
@@ -59,6 +58,18 @@ Re-run the generation step if you change:
 - `.env`
 - `conduit.toml.template`
 - the domain or registration token
+
+## Matrix Coturn (video calls add-on)
+
+Coturn requires the following ports to be open:
+
+```sh
+ufw allow 3478/udp
+ufw allow 3478/tcp
+ufw allow 49160:49200/udp
+```
+
+Configuration is done in `conduit.toml.template`.
 
 ## Useful commands
 
