@@ -410,9 +410,39 @@ loki.process "docker_logs" {
 		}
 	}
 
+	// matrix coturn
+	stage.match {
+		selector = "{app=\"coturn\"}"
+
+		stage.regex {
+			expression = "^(?P<thread>\\d+): \\((?P<pid>\\d+)\\): (?P<level>INFO|WARNING|ERROR|DEBUG|TRACE): (?P<msg>.*)$"
+		}
+
+		// Normalize WARNING -> WARN
+		stage.template {
+			source   = "level"
+			template = `{{ if eq .level "WARNING" }}WARN{{ else }}{{ .level }}{{ end }}`
+		}
+
+		stage.labels {
+			values = { level = null }
+		}
+
+		stage.template {
+			source   = "packed"
+			template = `{
+			"msg":{{ toJson .msg }},
+			"thread":{{ toJson .thread }},
+			"pid":{{ toJson .pid }}
+			}`
+		}
+
+		stage.output { source = "packed" }
+	}
+
 	// All other JSON apps (e.g. spring boot apps)
 	stage.match {
-		selector = "{app!~\"^(caddy|grafana|prometheus|alloy|fail2ban|geoipupdate|portainer|watchtower|node-exporter|cadvisor|conduit)$\"}"
+		selector = "{app!~\"^(caddy|grafana|prometheus|alloy|fail2ban|geoipupdate|portainer|watchtower|node-exporter|cadvisor|conduit|coturn)$\"}"
 
 		stage.json {
 			expressions = {level = "level", logger = "logger_name", msg = "message", ts = "[\"@timestamp\"]", stack_trace = "stack_trace"}

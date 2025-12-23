@@ -12,3 +12,26 @@ services:
     networks:
       - backend
 
+  coturn:
+    image: coturn/coturn:4.7.0
+    labels:
+      - app=coturn
+    restart: unless-stopped
+    network_mode: "host"
+    environment:
+      DOMAIN: ${DOMAIN}
+      TURN_SECRET: ${TURN_SECRET}
+      TURN_EXTERNAL_IP: ${TURN_EXTERNAL_IP}
+      TURN_MIN_PORT: ${TURN_MIN_PORT:-49160}
+      TURN_MAX_PORT: ${TURN_MAX_PORT:-49200}
+    command: >
+      -n
+      --log-file=stdout
+      --external-ip=${TURN_EXTERNAL_IP}
+      --realm=matrix.${DOMAIN}
+      --listening-port=3478
+      --fingerprint
+      --use-auth-secret
+      --static-auth-secret=${TURN_SECRET}
+      --min-port=${TURN_MIN_PORT}
+      --max-port=${TURN_MAX_PORT}
