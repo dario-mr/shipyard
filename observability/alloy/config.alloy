@@ -386,26 +386,33 @@ loki.process "docker_logs" {
 	stage.match {
 		selector = "{app=\"conduit\"}"
 
-		// remove ANSI color codes (ESC[ ... letter)
+		// Strip ANSI color codes
 		stage.replace {
 			expression = "\\x1b\\[[0-9;]*[A-Za-z]"
 			replace    = ""
 		}
 
+		// Parse (timestamp optional)
 		stage.regex {
-    		expression = "^(?:(?P<ts>\\S+)\\s+)?(?P<level>[A-Z]+)\\s+(?:(?P<logger>[^\\s:]+):\\s+)?(?P<msg>.*)$"
+			expression = "^(?:(?P<ts>\\S+)\\s+)?(?P<level>[A-Z]+)\\s+(?:(?P<logger>[^\\s:]+):\\s+)?(?P<msg>.*)$"
 		}
 
+		// Promote level to a Loki label IF it exists
 		stage.labels {
 			values = { level = "level" }
 		}
 
-		stage.template {
+		// Only pack/output if parsing succeeded (level label exists)
+		stage.match {
+			selector = "{app=\"conduit\", level!=\"\"}"
+
+			stage.template {
 			source   = "packed"
 			template = `{"msg":{{ toJson .msg }},"logger":{{ toJson .logger }},"level":{{ toJson .level }}}`
-		}
+			}
 
-		stage.output { source = "packed" }
+			stage.output { source = "packed" }
+		}
 	}
 
 	// All other JSON apps (e.g. spring boot apps)
