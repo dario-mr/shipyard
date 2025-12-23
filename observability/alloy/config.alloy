@@ -380,46 +380,31 @@ loki.process "docker_logs" {
 		stage.output {
 			source = "packed"
 		}
-	}
+	} 
 
-// matrix conduit
+// Conduit
 stage.match {
   selector = "{app=\"conduit\"}"
 
-  // 1) extract msg from the JSON line produced earlier in your pipeline
-  stage.json {
-    expressions = {
-      msg = "msg",
-    }
-  }
+  // strips ANSI color codes (your screenshot shows them)
+  stage.decolorize {}
 
-  // 2) strip ANSI ESC sequences from the extracted msg field
-  stage.replace {
-    source     = "msg"
-    expression = "\\x1b\\[[0-9;]*m"
-    replace    = ""
-  }
-
-  // 3) parse the cleaned msg field
+  // 2025-12-23T16:39:38.264208Z  WARN conduit: Not found: ...
   stage.regex {
-    source     = "msg"
-    expression = "^(?P<ts>\\S+)\\s+(?P<level>[A-Z]+)\\s+(?P<logger>[^\\s:]+):\\s+(?P<msg2>.*)$"
+    expression = "^(?P<ts>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d+Z)\\s+(?P<level>[A-Z]+)\\s+conduit:\\s+(?P<msg>.*)$"
   }
 
-  // 4) promote level to label
   stage.labels {
-    values = { level = "level" }
+    values = { level = null }
   }
 
-  // 5) output a clean JSON line
   stage.template {
     source   = "packed"
-    template = `{"msg":{{ toJson .msg2 }},"logger":{{ toJson .logger }},"level":{{ toJson .level }}}`
+    template = `{"msg":{{ toJson .msg }}}`
   }
 
   stage.output { source = "packed" }
 
-  // optional: use app timestamp
   stage.timestamp {
     source = "ts"
     format = "RFC3339Nano"
