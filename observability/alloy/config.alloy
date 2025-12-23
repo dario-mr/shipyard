@@ -389,7 +389,7 @@ stage.match {
   // 1) extract msg from the JSON line produced earlier in your pipeline
   stage.json {
     expressions = {
-      msg = "msg"
+      msg = "msg",
     }
   }
 
