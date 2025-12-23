@@ -387,13 +387,11 @@ loki.process "docker_logs" {
 		selector = "{app=\"conduit\"}"
 
 		stage.regex {
-			expression = "^(?P<ts>\\S+)\\s+(?P<level>[A-Z]+)\\s+(?P<logger>[^\\s:]+(?:::[^\\s:]+)*):\\s+(?P<msg>.*)$"
+			expression = "^(?P<ts>\\S+)\\s+(?P<level>[A-Z]+)\\s+(?:(?P<logger>[^\\s:]+(?:::[^\\s:]+)*):\\s+)?(?P<msg>.*)$"
 		}
 
 		stage.labels {
-			values = {
-				level = null,
-			}
+			values = {level = null}
 		}
 
 		stage.template {
@@ -401,14 +399,7 @@ loki.process "docker_logs" {
 			template = `{"msg":{{ toJson .msg }},"logger":{{ toJson .logger }}}`
 		}
 
-		stage.output {
-			source = "packed"
-		}
-
-		stage.timestamp {
-			source = "ts"
-			format = "RFC3339Nano"
-		}
+		stage.output { source = "packed" }
 	}
 
 	// All other JSON apps (e.g. spring boot apps)
