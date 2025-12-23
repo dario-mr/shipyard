@@ -393,13 +393,6 @@ loki.process "docker_logs" {
 		stage.labels {
 			values = { level = "level" }
 		}
-
-		stage.template {
-			source   = "packed"
-			template = `{"msg":{{ toJson .msg }},"logger":{{ toJson .logger }}}`
-		}
-
-		stage.output { source = "packed" }
 	}
 
 	// All other JSON apps (e.g. spring boot apps)
