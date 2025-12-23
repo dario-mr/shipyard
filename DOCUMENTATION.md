@@ -20,6 +20,46 @@ docker buildx build \
   --push .
 ```
 
+## Matrix (Conduit) configuration generation
+
+Conduit does not expand environment variables inside `conduit.toml`.
+To keep secrets out of git, we generate the final config using `envsubst` at deploy time.
+
+### Files
+
+- `matrix/conduit/conduit.toml.template` — committed template
+- `compose/conduit/generated/conduit.toml` — generated file (not committed)
+- `.env` — contains secrets (not committed)
+
+### Required environment variables
+
+DOMAIN=dariolab.com
+
+CONDUIT_REGISTRATION_TOKEN=change-me
+
+### Generate the config
+
+Run from the repo root:
+
+```sh
+mkdir -p compose/conduit/generated
+set -a; . ./.env; set +a
+envsubst < matrix/conduit/conduit.toml.template > compose/conduit/generated/conduit.toml
+```
+
+### Start / update the service
+
+```sh
+docker compose up -d --force-recreate --no-deps conduit
+```
+
+### When to re-run envsubst
+
+Re-run the generation step if you change:
+- `.env`
+- `conduit.toml.template`
+- the domain or registration token
+
 ## Useful commands
 
 ### Recreate containers

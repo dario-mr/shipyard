@@ -18,12 +18,23 @@
 		-Server
 	}
 
+	# Matrix client discovery
+	@matrix_well_known {
+		path /.well-known/matrix/client
+	}
+	handle @matrix_well_known {
+		header Content-Type application/json
+		header Access-Control-Allow-Origin *
+		respond `{"m.homeserver":{"base_url":"https://matrix.{$DOMAIN}"}}` 200
+	}
+
 	# Allowed paths
 	@allowed {
 		path / /index.html /favicon.ico
 		path /assets/* /static/* /icons/* /locales/*
 		path /robots.txt /sitemap.xml /manifest.json /site.webmanifest
 		path /apple-touch-icon*.png /.well-known/acme-challenge/*
+		path /.well-known/matrix/client
 		path /api-stress-test/* /ichiro-family-tree/* /shortly/* /ichiro-walks/* /portainer/* /grafana/* /htmx-demo/*
 	}
 
@@ -56,4 +67,17 @@
 		header X-Unknown-Path "1"
 		respond 404
 	}
+}
+
+matrix.{$DOMAIN} {
+	@matrix_well_known {
+		path /.well-known/matrix/client
+	}
+	handle @matrix_well_known {
+		header Content-Type application/json
+		header Access-Control-Allow-Origin *
+		respond `{"m.homeserver":{"base_url":"https://matrix.{$DOMAIN}"}}` 200
+	}
+
+	reverse_proxy conduit:6167
 }
