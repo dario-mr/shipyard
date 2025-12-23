@@ -382,6 +382,31 @@ loki.process "docker_logs" {
 		}
 	}
 
+	// matrix conduit
+	stage.match {
+		selector = "{app=\"conduit\"}"
+
+		stage.regex {
+			expression = "^(?P<ts>\\S+)\\s+(?P<level>[A-Z]+)\\s+(?P<target>[^\\s:]+(?:::[^\\s:]+)*):\\s+(?P<msg>.*)$"
+		}
+
+		stage.labels {
+			values = {
+				level  = null,
+				logger = "target",
+			}
+		}
+
+		stage.timestamp {
+			source = "ts"
+			format = "RFC3339Nano"
+		}
+
+		stage.output {
+			source = "msg"
+		}
+	}
+
 	// All other JSON apps (e.g. spring boot apps)
 	stage.match {
 		selector = "{app!~\"^(caddy|grafana|prometheus|alloy|fail2ban|geoipupdate|portainer|watchtower|node-exporter|cadvisor)$\"}"

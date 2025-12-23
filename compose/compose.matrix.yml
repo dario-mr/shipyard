@@ -1,6 +1,8 @@
 services:
   conduit:
-    image: matrixconduit/matrix-conduit:v0.10.9
+    image: matrixconduit/matrix-conduit:v0.10.10
+    labels:
+      - app=conduit
     restart: unless-stopped
     environment:
       CONDUIT_CONFIG: /config/conduit.toml
