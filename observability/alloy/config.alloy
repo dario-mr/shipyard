@@ -393,7 +393,7 @@ loki.process "docker_logs" {
 		}
 
 		stage.regex {
-			expression = "^(?P<ts>\\S+)\\s+(?P<level>[A-Z]+)\\s+(?:(?P<logger>[^\\s:]+):\\s+)?(?P<msg>.*)$"
+    		expression = "^(?:(?P<ts>\\S+)\\s+)?(?P<level>[A-Z]+)\\s+(?:(?P<logger>[^\\s:]+):\\s+)?(?P<msg>.*)$"
 		}
 
 		stage.labels {
