@@ -419,10 +419,9 @@ loki.process "docker_logs" {
 		}
 
 		// Normalize WARNING -> WARN
-		stage.replace {
-			source     = "level"
-			expression = "^WARNING$"
-			replace    = "WARN"
+		stage.template {
+			source   = "level"
+			template = `{{ if eq .level "WARNING" }}WARN{{ else }}{{ .level }}{{ end }}`
 		}
 
 		stage.labels {
