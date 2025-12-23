@@ -9,3 +9,10 @@ registration_token = "${CONDUIT_REGISTRATION_TOKEN}"
 
 database_backend = "rocksdb"
 database_path = "/data"
+
+turn_uris = [
+  "turn:matrix.${DOMAIN}:3478?transport=udp",
+  "turn:matrix.${DOMAIN}:3478?transport=tcp"
+]
+turn_secret = "${TURN_SECRET}"
+turn_ttl = 86400
