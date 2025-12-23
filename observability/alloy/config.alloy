@@ -402,7 +402,7 @@ loki.process "docker_logs" {
 
 		stage.template {
 			source   = "packed"
-			template = `{"msg":{{ toJson .msg }},"logger":{{ toJson .logger }},"level":{{ toJson .level }}`
+			template = `{"msg":{{ toJson .msg }},"logger":{{ toJson .logger }},"level":{{ toJson .level }}}`
 		}
 
 		stage.output { source = "packed" }
