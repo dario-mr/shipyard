@@ -382,34 +382,33 @@ loki.process "docker_logs" {
 		}
 	} 
 
-// Conduit
-stage.match {
-  selector = "{app=\"conduit\"}"
+	// matrix conduit
+	stage.match {
+		selector = "{app=\"conduit\"}"
 
-  // strips ANSI color codes (your screenshot shows them)
-  stage.decolorize {}
+		// strips ANSI color codes
+		stage.decolorize {}
 
-  // 2025-12-23T16:39:38.264208Z  WARN conduit: Not found: ...
-  stage.regex {
-    expression = "^(?P<ts>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d+Z)\\s+(?P<level>[A-Z]+)\\s+conduit:\\s+(?P<msg>.*)$"
-  }
+		stage.regex {
+			expression = "^(?P<ts>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d+Z)\\s+(?P<level>[A-Z]+)\\s+conduit:\\s+(?P<msg>.*)$"
+		}
 
-  stage.labels {
-    values = { level = null }
-  }
+		stage.labels {
+			values = { level = null }
+		}
 
-  stage.template {
-    source   = "packed"
-    template = `{"msg":{{ toJson .msg }}}`
-  }
+		stage.template {
+			source   = "packed"
+			template = `{"msg":{{ toJson .msg }}}`
+		}
 
-  stage.output { source = "packed" }
+		stage.output { source = "packed" }
 
-  stage.timestamp {
-    source = "ts"
-    format = "RFC3339Nano"
-  }
-}
+		stage.timestamp {
+			source = "ts"
+			format = "RFC3339Nano"
+		}
+	}
 
 	// All other JSON apps (e.g. spring boot apps)
 	stage.match {
