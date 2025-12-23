@@ -406,11 +406,6 @@ loki.process "docker_logs" {
 		}
 
 		stage.output { source = "packed" }
-
-		stage.timestamp {
-			source = "ts"
-			format = "RFC3339Nano"
-		}
 	}
 
 	// All other JSON apps (e.g. spring boot apps)
