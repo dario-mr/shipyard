@@ -8,6 +8,7 @@ include:
   - compose/compose.apps.yml
   - compose/compose.fail2ban.yml
   - compose/compose.observability.yml
+  - compose/compose.matrix.yml
 
 networks:
   backend:
@@ -22,3 +23,4 @@ volumes:
   geoipupdate_data:
   prometheus_data:
   alloy_data:
+  conduit-data:

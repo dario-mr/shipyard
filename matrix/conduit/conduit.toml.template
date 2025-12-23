@@ -1,0 +1,11 @@
+[global]
+server_name = "${DOMAIN}"
+address = "0.0.0.0"
+port = 6167
+
+allow_federation = false
+allow_registration = true
+registration_token = "${CONDUIT_REGISTRATION_TOKEN}"
+
+database_backend = "rocksdb"
+database_path = "/data"

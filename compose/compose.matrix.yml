@@ -1,0 +1,14 @@
+services:
+  conduit:
+    image: matrixconduit/matrix-conduit:v0.10.10
+    labels:
+      - app=conduit
+    restart: unless-stopped
+    environment:
+      CONDUIT_CONFIG: /config/conduit.toml
+    volumes:
+      - ./conduit/generated:/config:ro
+      - conduit-data:/data
+    networks:
+      - backend
+
