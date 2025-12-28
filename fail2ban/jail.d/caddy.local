@@ -35,3 +35,21 @@ logpath  = /var/log/caddy/access.log
 maxretry = 5
 findtime = 5m
 bantime  = 1h
+
+# Matrix: ban IPs that request non-allowed paths
+[matrix-unknownpaths]
+enabled  = true
+filter   = caddy-unknownpaths
+logpath  = /var/log/caddy/matrix-access.log
+maxretry = 1
+findtime = 10m
+bantime  = 24h
+
+# Matrix: ban IPs that hit too many 429s quickly
+[matrix-429]
+enabled  = true
+filter   = caddy-429
+logpath  = /var/log/caddy/matrix-access.log
+maxretry = 10
+findtime = 1m
+bantime  = 1h
