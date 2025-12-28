@@ -70,6 +70,22 @@
 }
 
 matrix.{$DOMAIN} {
+	log {
+		output file /var/log/caddy/matrix-access.log {
+			roll_size 10MiB
+			roll_keep 10
+		}
+		format json
+	}
+
+	header {
+		Strict-Transport-Security "max-age=63072000"
+		X-Frame-Options "DENY"
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+
+	# Matrix client discovery on matrix.$DOMAIN
 	@matrix_well_known {
 		path /.well-known/matrix/client
 	}
@@ -79,5 +95,40 @@ matrix.{$DOMAIN} {
 		respond `{"m.homeserver":{"base_url":"https://matrix.{$DOMAIN}"}}` 200
 	}
 
-	reverse_proxy conduit:6167
+	# rate limit only client traffic
+	@matrix_client {
+		path /_matrix/client/*
+	}
+	handle @matrix_client {
+		rate_limit {
+			zone per_ip_matrix_client {
+				key {remote_host}
+				events 300
+				window 10s
+			}
+		}
+		reverse_proxy conduit:6167
+	}
+
+	# all other Matrix APIs (federation, media, keys, ...) -> no rate limit
+	@matrix_api {
+		path /_matrix/*
+	}
+	handle @matrix_api {
+		reverse_proxy conduit:6167
+	}
+
+	# let Conduit handle "/" itself
+	@matrix_root {
+		path /
+	}
+	handle @matrix_root {
+		reverse_proxy conduit:6167
+	}
+
+	# everything else gets dropped before touching Conduit
+	handle {
+		header X-Unknown-Path "1"
+		respond 404
+	}
 }
