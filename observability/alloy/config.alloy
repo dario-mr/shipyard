@@ -156,7 +156,7 @@ loki.process "docker_logs" {
 
 	// Plain-text apps
 	stage.match {
-		selector = "{app=~\"fail2ban|geoipupdate|portainer\"}"
+		selector = "{app=~\"geoipupdate|portainer\"}"
 
 		stage.template {
 			source   = "packed"
@@ -380,21 +380,21 @@ loki.process "docker_logs" {
 		stage.output {
 			source = "packed"
 		}
-	} 
+	}
 
 	// matrix conduit
 	stage.match {
 		selector = "{app=\"conduit\"}"
 
 		// strips ANSI color codes
-		stage.decolorize {}
+		stage.decolorize { }
 
 		stage.regex {
-  			expression = "^(?P<ts>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d+Z)\\s+(?P<level>[A-Z]+)\\s+(?P<logger>\\S+):\\s+(?P<msg>.*)$"
+			expression = "^(?P<ts>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d+Z)\\s+(?P<level>[A-Z]+)\\s+(?P<logger>\\S+):\\s+(?P<msg>.*)$"
 		}
 
 		stage.labels {
-			values = { level = null }
+			values = {level = null}
 		}
 
 		stage.template {
@@ -402,7 +402,9 @@ loki.process "docker_logs" {
 			template = `{"logger":{{ toJson .logger }},"msg":{{ toJson .msg }}}`
 		}
 
-		stage.output { source = "packed" }
+		stage.output {
+			source = "packed"
+		}
 
 		stage.timestamp {
 			source = "ts"
@@ -425,19 +427,60 @@ loki.process "docker_logs" {
 		}
 
 		stage.labels {
-			values = { level = null }
+			values = {level = null}
 		}
 
 		stage.template {
 			source   = "packed"
 			template = `{
 			"msg":{{ toJson .msg }},
-			"thread":{{ toJson .thread }},
-			"pid":{{ toJson .pid }}
+			"thread":{{ toJson .thread }}
 			}`
 		}
 
-		stage.output { source = "packed" }
+		stage.output {
+			source = "packed"
+		}
+	}
+
+	// fail2ban
+	stage.match {
+		selector = "{app=\"fail2ban\"}"
+
+		// Parse both:
+		//  - plain lines:  "Setting timezone to Europe/Prague..."
+		//  - structured:   "2025-12-28 21:12:41,588 fail2ban.actions [1]: NOTICE  [caddy-unknownpaths] Ban 4.190.186.103"
+		stage.regex {
+			expression = "^(?:(?P<ts>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3})\\s+(?P<logger>\\S+?)\\s*\\[(?P<pid>\\d+)\\]:\\s*(?P<level>[A-Z]+)\\s+)?(?P<msg>.*)$"
+		}
+
+		// Use timestamp when present, otherwise keep ingestion time
+		stage.timestamp {
+			source   = "ts"
+			format   = "2006-01-02 15:04:05,000"
+			location = env("TZ")
+		}
+
+		// Normalize levels: NOTICE -> INFO, WARNING-> WARN
+		stage.template {
+			source   = "level"
+			template = `{{- if eq .level "NOTICE" -}}INFO{{- else if eq .level "WARNING" -}}WARN{{- else -}}{{ .level }}{{- end -}}`
+		}
+
+		stage.labels {
+			values = {
+				level = null,
+			}
+		}
+
+		stage.template {
+			source   = "packed"
+			template = `{"logger":{{ toJson .logger }},"msg":{{ toJson .msg }}}`
+		}
+
+		stage.output {
+			source = "packed"
+		}
 	}
 
 	// All other JSON apps (e.g. spring boot apps)
