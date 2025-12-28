@@ -452,7 +452,7 @@ loki.process "docker_logs" {
 		//  - plain lines:  "Setting timezone to Europe/Prague..."
 		//  - structured:   "2025-12-28 21:12:41,588 fail2ban.actions [1]: NOTICE  [caddy-unknownpaths] Ban 4.190.186.103"
 		stage.regex {
-			expression = "^(?:(?P<ts>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3})\\s+(?P<logger>\\S+)\\s+\\[(?P<pid>\\d+)\\]:\\s+(?P<level>[A-Z]+)\\s+)?(?P<msg>.*)$"
+			expression = "^(?:(?P<ts>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3})\\s+(?P<logger>\\S+?)\\s*\\[(?P<pid>\\d+)\\]:\\s*(?P<level>[A-Z]+)\\s+)?(?P<msg>.*)$"
 		}
 
 		// Normalize levels: NOTICE -> INFO, WARNING-> WARN
