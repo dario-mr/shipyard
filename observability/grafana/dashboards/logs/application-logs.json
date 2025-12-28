@@ -51,7 +51,7 @@
         "enableLogDetails": true,
         "prettifyLogMessage": false,
         "showCommonLabels": false,
-        "showLabels": true,
+        "showLabels": false,
         "showTime": true,
         "sortOrder": "Descending",
         "wrapLogMessage": true
@@ -543,7 +543,7 @@
       },
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": ".*",
           "value": ".*"
         },
@@ -617,6 +617,6 @@
   "timezone": "",
   "title": "Application logs",
   "uid": "application-logs",
-  "version": 13,
+  "version": 15,
   "weekStart": ""
 }

@@ -434,8 +434,7 @@ loki.process "docker_logs" {
 			source   = "packed"
 			template = `{
 			"msg":{{ toJson .msg }},
-			"thread":{{ toJson .thread }},
-			"pid":{{ toJson .pid }}
+			"thread":{{ toJson .thread }}
 			}`
 		}
 
@@ -455,6 +454,13 @@ loki.process "docker_logs" {
 			expression = "^(?:(?P<ts>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3})\\s+(?P<logger>\\S+?)\\s*\\[(?P<pid>\\d+)\\]:\\s*(?P<level>[A-Z]+)\\s+)?(?P<msg>.*)$"
 		}
 
+		// Use timestamp when present, otherwise keep ingestion time
+		stage.timestamp {
+			source     = "ts"
+			format     = "2006-01-02 15:04:05,000"
+			on_failure = "skip"
+		}
+
 		// Normalize levels: NOTICE -> INFO, WARNING-> WARN
 		stage.template {
 			source   = "level"
@@ -463,9 +469,7 @@ loki.process "docker_logs" {
 
 		stage.labels {
 			values = {
-				level  = null,
-				logger = null,
-				pid    = null,
+				level = null,
 			}
 		}
 
