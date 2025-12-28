@@ -16,3 +16,10 @@ turn_uris = [
 ]
 turn_secret = "${TURN_SECRET}"
 turn_ttl = 86400
+
+[global.media]
+backend = "filesystem"
+path = "/data/media"
+
+[[global.media.retention]]
+space = "18G"
