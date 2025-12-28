@@ -456,8 +456,9 @@ loki.process "docker_logs" {
 
 		// Use timestamp when present, otherwise keep ingestion time
 		stage.timestamp {
-			source = "ts"
-			format = "2006-01-02 15:04:05,000"
+			source   = "ts"
+			format   = "2006-01-02 15:04:05,000"
+			location = env("TIMEZONE")
 		}
 
 		// Normalize levels: NOTICE -> INFO, WARNING-> WARN
