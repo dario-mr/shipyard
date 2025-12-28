@@ -27,6 +27,7 @@ services:
       - --storage.path=/var/lib/alloy/data
       - /etc/alloy/config.alloy
     environment:
+      TZ: ${TIMEZONE}
       DOMAIN: ${DOMAIN}
     volumes:
       - ../observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
