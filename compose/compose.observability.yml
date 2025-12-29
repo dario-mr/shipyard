@@ -1,6 +1,6 @@
 services:
   loki:
-    image: grafana/loki:2.9.4
+    image: grafana/loki:2.9.17
     labels:
       - app=loki
       - logs_scrape=false
