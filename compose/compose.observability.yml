@@ -113,7 +113,7 @@ services:
       - /var/lib/docker/:/var/lib/docker:ro
 
   node-exporter:
-    image: prom/node-exporter:v1.9.1
+    image: prom/node-exporter:v1.10.2
     labels:
       - app=node-exporter
     restart: unless-stopped
