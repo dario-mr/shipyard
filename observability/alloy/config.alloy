@@ -242,13 +242,16 @@ loki.process "docker_logs" {
 	stage.match {
 		selector = "{app=\"alloy\"}"
 
-		// Only try to parse lines that look like Alloy logfmt
-		stage.regex {
-			expression = "^ts=[^ ]+ level=[^ ]+ msg="
-		}
-
 		stage.logfmt {
-			mapping = {ts = "ts", level = "level", msg = "msg", component_id = "component_id", error = "error", err = "err", node_id = "node_id"}
+			mapping = {
+				ts           = "ts",
+				level        = "level",
+				msg          = "msg",
+				component_id = "component_id",
+				error        = "error",
+				err          = "err",
+				node_id      = "node_id",
+			}
 		}
 
 		stage.labels {
