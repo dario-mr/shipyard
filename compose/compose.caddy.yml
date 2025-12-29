@@ -1,6 +1,6 @@
 services:
   caddy:
-    image: dariomr8/caddy-with-ratelimit:2.10.0
+    image: dariomr8/caddy-with-ratelimit:2.10.2
     labels:
       - app=caddy
     restart: unless-stopped

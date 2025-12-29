@@ -1,6 +1,6 @@
 services:
   loki:
-    image: grafana/loki:2.9.4
+    image: grafana/loki:2.9.17
     labels:
       - app=loki
       - logs_scrape=false
@@ -17,7 +17,7 @@ services:
       retries: 3
 
   alloy:
-    image: grafana/alloy:v1.10.2
+    image: grafana/alloy:v1.12.1
     labels:
       - app=alloy
     restart: unless-stopped
@@ -41,7 +41,7 @@ services:
     read_only: true
 
   grafana:
-    image: grafana/grafana:10.4.5
+    image: grafana/grafana:12.3.1
     labels:
       - app=grafana
     restart: unless-stopped
@@ -60,7 +60,6 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
-    read_only: true
 
   geoipupdate:
     image: ghcr.io/maxmind/geoipupdate:v7.1.1
@@ -82,7 +81,7 @@ services:
       retries: 10
 
   prometheus:
-    image: prom/prometheus:v3.5.0
+    image: prom/prometheus:v3.8.1
     labels:
       - app=prometheus
     restart: unless-stopped
@@ -101,7 +100,7 @@ services:
       retries: 3
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.52.0
+    image: gcr.io/cadvisor/cadvisor:v0.55.1
     labels:
       - app=cadvisor
     restart: unless-stopped
@@ -113,7 +112,7 @@ services:
       - /var/lib/docker/:/var/lib/docker:ro
 
   node-exporter:
-    image: prom/node-exporter:v1.9.1
+    image: prom/node-exporter:v1.10.2
     labels:
       - app=node-exporter
     restart: unless-stopped
