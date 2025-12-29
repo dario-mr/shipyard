@@ -113,7 +113,7 @@ matrix.{$DOMAIN} {
 	# all other Matrix APIs, no rate limit
 	@matrix_other {
 		path /_matrix/*
-    path / /favicon.ico
+		path / /favicon.ico
 	}
 	handle @matrix_other {
 		reverse_proxy conduit:6167
