@@ -248,7 +248,7 @@ loki.process "docker_logs" {
 		}
 
 		stage.logfmt {
-			mapping = {ts = "ts", level = "level", msg = "msg", component_id = "component_id", error = "error", node_id = "node_id"}
+			mapping = {ts = "ts", level = "level", msg = "msg", component_id = "component_id", error = "error", err = "err", node_id = "node_id"}
 		}
 
 		stage.labels {
@@ -257,7 +257,7 @@ loki.process "docker_logs" {
 
 		stage.template {
 			source   = "packed"
-			template = `{"msg":{{ toJson .msg }}{{ if .node_id }},"node_id":{{ toJson .node_id }}{{ end }}{{ if .component_id }},"component_id":{{ toJson .component_id }}{{ end }}{{ if .error }},"error":{{ toJson .error }}{{ end }}}`
+			template = `{ "msg":{{ toJson .msg }}{{ if .node_id }},"node_id":{{ toJson .node_id }}{{ end }}{{ if .component_id }},"component_id":{{ toJson .component_id }}{{ end }}{{ if .error }},"error":{{ toJson .error }}{{ end }}{{ if .err }},"error":{{ toJson .err }}{{ end }} }`
 		}
 
 		stage.output {
