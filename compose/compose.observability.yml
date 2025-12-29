@@ -41,7 +41,7 @@ services:
     read_only: true
 
   grafana:
-    image: grafana/grafana:10.4.5
+    image: grafana/grafana:12.3.1
     labels:
       - app=grafana
     restart: unless-stopped
@@ -60,7 +60,6 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
-    read_only: true
 
   geoipupdate:
     image: ghcr.io/maxmind/geoipupdate:v7.1.1
