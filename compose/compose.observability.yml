@@ -82,7 +82,7 @@ services:
       retries: 10
 
   prometheus:
-    image: prom/prometheus:v3.5.0
+    image: prom/prometheus:v3.8.1
     labels:
       - app=prometheus
     restart: unless-stopped
