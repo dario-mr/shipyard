@@ -17,7 +17,7 @@ services:
       retries: 3
 
   alloy:
-    image: grafana/alloy:v1.10.2
+    image: grafana/alloy:v1.12.1
     labels:
       - app=alloy
     restart: unless-stopped
