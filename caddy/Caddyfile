@@ -110,19 +110,12 @@ matrix.{$DOMAIN} {
 		reverse_proxy conduit:6167
 	}
 
-	# all other Matrix APIs (federation, media, keys, ...) -> no rate limit
-	@matrix_api {
+	# all other Matrix APIs, no rate limit
+	@matrix_other {
 		path /_matrix/*
+    path / /favicon.ico
 	}
-	handle @matrix_api {
-		reverse_proxy conduit:6167
-	}
-
-	# let Conduit handle "/" itself
-	@matrix_root {
-		path /
-	}
-	handle @matrix_root {
+	handle @matrix_other {
 		reverse_proxy conduit:6167
 	}
 
