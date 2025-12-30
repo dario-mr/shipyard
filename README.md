@@ -1,9 +1,15 @@
 # shipyard
 
-Infrastructure-as-code for my single-host, self-hosted stack (Docker Compose + Caddy).
+A lightweight, single-host infrastructure-as-code stack for small projects, based on Docker Compose.
 
-The setup is opinionated, yet the entrypoints and configuration are intended to be clear and easy to
-adapt.
+Opinionated defaults, with clear entrypoints and configuration that are easy to customize.
+
+**What you get**
+
+- HTTPS at the edge (Caddy + Let’s Encrypt)
+- Central routing (Spring Cloud Gateway)
+- Observability (Alloy + Loki + Prometheus + Grafana)
+- Basic hardening (security headers, rate limiting, fail2ban)
 
 ## Contents
 
@@ -15,16 +21,9 @@ adapt.
 - [Operations](#operations)
 - [Minimal security notes](#minimal-security-notes)
 
-**What you get**
-
-- HTTPS at the edge (Caddy + Let’s Encrypt)
-- Central routing (Spring Cloud Gateway)
-- Observability (Alloy + Loki + Prometheus + Grafana)
-- Basic hardening (security headers, rate limiting, fail2ban)
-
 ## Architecture
 
-Request path: `Internet → Caddy (TLS termination) → Gateway (routing) → Apps`
+Request path: `Internet → Caddy → Gateway → Apps`
 
 ```mermaid
 %%{ init: { "flowchart": { "nodeSpacing": 50, "rankSpacing": 50 } } }%%
@@ -38,7 +37,7 @@ flowchart TD
     subgraph Internal["Internal (Docker network)"]
         subgraph Core["Core"]
             Gateway["Gateway<br/>[routing]"]
-            Backends["Apps"]
+            Apps["Apps"]
         end
 
         subgraph Observability["Observability"]
@@ -56,16 +55,16 @@ flowchart TD
 %% traffic
     Internet --> Caddy
     Caddy -->|forwards to| Gateway
-    Gateway -->|routes to| Backends
+    Gateway -->|routes to| Apps
 %% security
     fail2ban -->|tails access logs| Caddy
 %% observability
     Alloy -->|tails access logs| Caddy
-    Alloy -->|tails container logs| Backends
+    Alloy -->|tails container logs| Apps
     Alloy -->|ships logs| Loki
     Grafana -->|queries logs| Loki
 %% metrics
-    Prometheus -->|scrapes metrics| Backends
+    Prometheus -->|scrapes metrics| Apps
     Grafana -->|queries metrics| Prometheus
 %% colors
     style Public fill: #fff7ed, stroke: #fed7aa
@@ -78,7 +77,7 @@ flowchart TD
     class Prometheus,Alloy,Loki,Grafana,fail2ban node
 %% main-flow nodes
     classDef mainFlow fill: #ffedd5, stroke: #fdba74, color: #7c2d12
-    class Internet,Caddy,Gateway,Backends mainFlow
+    class Internet,Caddy,Gateway,Apps mainFlow
 ```
 
 ## Components
@@ -87,20 +86,19 @@ flowchart TD
 - **Gateway**: Spring Cloud Gateway (separate repo: [`apigw`](https://github.com/dario-mr/apigw))
   that routes to upstream apps.
 - **fail2ban**: tails Caddy logs and bans offenders at firewall level.
-- **Watchtower**: auto-pulls the latest Docker images.
-- **Portainer**: Docker UI, served under `/portainer/`.
 - **Observability**:
-    - **Alloy**: tails access logs (from Caddy log file) and application logs (from Docker stdout)
-      and ships them to Loki.
+    - **Alloy**: tails Caddy access logs and application logs (from Docker stdout) and ships them to Loki.
     - **Loki**: log database.
     - **Prometheus**: scrapes and stores metrics from Spring Boot apps and infra services.
     - **Grafana**: dashboards for logs (Loki) and metrics (Prometheus), served under `/grafana/`.
-- **Backends**: `api-stress-test`, `ichiro-family-tree`, etc.
+- **Watchtower**: auto-pulls the latest Docker images.
+- **Portainer**: Docker UI, served under `/portainer/`.
+- **Apps**: `api-stress-test`, `ichiro-family-tree`, etc.
 
 ## Prerequisites
 
 - A domain name pointing to the server’s IP (for TLS/Let’s Encrypt).
-- A server with Docker and Docker Compose (Compose v2).
+- A server with Docker and Docker Compose.
 - Firewall allows inbound `80/tcp` and `443/tcp`.
 - If you enable Matrix + Coturn (private chat and calls), you also need `3478/tcp`, `3478/udp`, and
   a UDP port range (see `DOCUMENTATION.md`).
@@ -108,17 +106,24 @@ flowchart TD
 ## Quickstart
 
 ```sh
-# 1) (Optional) Configure Docker log rotation (requires sudo + jq)
+# 1) Clone repo
+git clone https://github.com/dario-mr/shipyard.git
+cd shipyard
+
+# 2) Open required ports (SSH, HTTP/HTTPS, COTURN)
+./scripts/open-ports.sh
+
+# 3) Configure Docker log rotation (requires sudo + jq)
 ./scripts/setup-docker-logging.sh
 
-# 2) Create your env file
+# 4) Create your env file
 cp .env.example .env
 # edit values
 
-# 3) Start
+# 5) Start
 docker compose up -d --build
 
-# 4) Verify
+# 6) Verify
 docker compose ps
 docker compose logs -f caddy
 ```
@@ -133,10 +138,11 @@ docker compose logs -f caddy
 - `.env` contains runtime configuration and secrets. Start from `.env.example`.
 - Treat these as secrets and do not commit them:
     - `GRAFANA_ADMIN_PASSWORD`
-    - `EMAIL_SERVER_PASSWORD` (Watchtower notifications)
-    - `DB_PASSWORD`, `OAUTH_CLIENT_SECRET`, `ENCRYPTION_KEY`
-    - `CONDUIT_REGISTRATION_TOKEN`, `TURN_SECRET`
-- Common configs:
+    - `EMAIL_SERVER_PASSWORD`: used for watchtower notifications
+    - `GEOIPUPDATE_ACCOUNT_ID`, `GEOIPUPDATE_LICENSE_KEY`: GeoIP data to enrich access logs, get your free
+      key at [MaxMind](https://www.maxmind.com/en/geolite2/signup)
+    - `CONDUIT_REGISTRATION_TOKEN`, `TURN_SECRET`: only if you enable Matrix
+- App configs:
     - `DOMAIN`, `TIMEZONE`
     - DB / OAuth settings for your apps
 
