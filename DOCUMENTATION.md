@@ -1,42 +1,46 @@
 # Documentation
 
-## Caddy image
+See `README.md` for the high-level overview.
 
-Caddy uses a custom image that includes the `caddy-ratelimit` plugin. It is hosted in
-my [docker hub](https://hub.docker.com/repository/docker/dariomr8/caddy-with-ratelimit/general).
+## Caddy custom image
 
-It is built from the [Dockerfile.caddy](caddy/Dockerfile.caddy).
+Caddy uses a custom image that includes the `caddy-ratelimit` plugin.
+
+- Docker
+  Hub: [dariomr8/caddy-with-ratelimit](https://hub.docker.com/repository/docker/dariomr8/caddy-with-ratelimit/general)
+- Build context: [`caddy/Dockerfile.caddy`](caddy/Dockerfile.caddy)
 
 To update the image after editing the Dockerfile:
 
-```shell
+```sh
 docker login docker.io
 
-cd caddy
 docker buildx build \
   --platform linux/arm64 \
   -t docker.io/dariomr8/caddy-with-ratelimit:2.10.0 \
-  -f Dockerfile.caddy \
-  --push .
+  -f caddy/Dockerfile.caddy \
+  --push caddy
 ```
 
-## Matrix Conduit (private chat)
+## Matrix
+
+### Conduit (private chat)
 
 Conduit does not expand environment variables inside `conduit.toml`.
 To keep secrets out of git, we generate the final config using `envsubst` at deploy time.
 
-### Files
+**Files**
 
 - `matrix/conduit/conduit.toml.template` — committed template
 - `compose/conduit/generated/conduit.toml` — generated file (not committed)
 - `.env` — contains secrets (not committed)
 
-### Required environment variables
+**Required environment variables**
 
-DOMAIN=dariolab.com  
-CONDUIT_REGISTRATION_TOKEN=change-me
+- `DOMAIN`
+- `CONDUIT_REGISTRATION_TOKEN`
 
-### Generate the config
+**Generate the config**
 
 Run from the repo root:
 
@@ -46,20 +50,18 @@ set -a; . ./.env; set +a
 envsubst < matrix/conduit/conduit.toml.template > compose/conduit/generated/conduit.toml
 ```
 
-### Start / update the service
+**Start / update the service**
 
 ```sh
 docker compose up -d --force-recreate --no-deps conduit
 ```
 
-### When to re-run envsubst
+**When to re-run `envsubst`**
 
-Re-run the generation step if you change:
-- `.env`
-- `conduit.toml.template`
-- the domain or registration token
+Re-run the generation step if you change `.env`, `conduit.toml.template`, the domain, or the
+registration token.
 
-## Matrix Coturn (video calls add-on)
+### Coturn (Matrix calls add-on)
 
 Coturn requires the following ports to be open:
 
@@ -69,45 +71,49 @@ ufw allow 3478/tcp
 ufw allow 49160:49200/udp
 ```
 
-Configuration is done in `conduit.toml.template`.
+Configuration is done in `matrix/conduit/conduit.toml.template`.
 
-## Useful commands
+## Operations & troubleshooting
 
 ### Recreate containers
 
-```shell
+```sh
 docker compose pull
 
 docker compose up -d --force-recreate
+
 docker compose up -d --force-recreate --no-deps gateway
+
 docker compose --env-file .env up -d --force-recreate --no-deps gateway
 ```
 
 ### Clean unused images
 
-```shell
+```sh
 docker image prune -f
 ```
 
 ### Caddy
 
-#### format
+Format:
 
-```shell
+```sh
 caddy fmt --overwrite
 ```
 
-#### validate
+Validate:
 
-```shell
+```sh
 docker compose exec caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
 ```
 
 ### Caddy access log helpers
 
+These assume the Caddy access log is at `/var/log/caddy/access.log` and `jq` is installed.
+
 #### 404s grouped by IP and path
 
-```shell
+```sh
 docker compose exec caddy cat /var/log/caddy/access.log \
   | jq -r 'select((.resp_headers["X-Unknown-Path"]//[])[0] == "1")
            | [.request.remote_ip, .request.uri] | @tsv' \
@@ -121,23 +127,23 @@ docker compose exec caddy cat /var/log/caddy/access.log \
 
 #### 404s sorted by hits
 
-```shell
+```sh
 docker compose exec caddy cat /var/log/caddy/access.log \
   | jq -r 'select((.resp_headers["X-Unknown-Path"]//[])[0] == "1") | .request.uri' \
   | awk '{c[$0]++} END {for (u in c) print c[u] "\t" u}' \
   | sort -t $'\t' -k1,1nr
 ```
 
-#### 429s
+#### 429s (too many requests)
 
-```shell
+```sh
 docker compose exec caddy cat /var/log/caddy/access.log | jq -r 'select(.status == 429) | .request.uri'
 ```
 
 ### fail2ban
 
-```shell
-# reload configs (e.g.: after changing fail2ban/jail.d/caddy.local)
+```sh
+# reload configs (e.g. after changing fail2ban/jail.d/caddy.local)
 docker compose exec fail2ban fail2ban-client reload
 
 # check jails
