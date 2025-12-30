@@ -27,7 +27,8 @@ adapt.
 Request path: `Internet → Caddy (TLS termination) → Gateway (routing) → Apps`
 
 ```mermaid
-flowchart LR
+%%{ init: { "flowchart": { "nodeSpacing": 50, "rankSpacing": 50 } } }%%
+flowchart TD
     Internet["Internet"]
 
     subgraph Public["Public"]
@@ -37,13 +38,13 @@ flowchart LR
     subgraph Internal["Internal (Docker network)"]
         subgraph Core["Core"]
             Gateway["Gateway<br/>[routing]"]
-            Backends["Apps & Services"]
+            Backends["Apps"]
         end
 
         subgraph Observability["Observability"]
+            Prometheus["Prometheus<br/>[metrics scraper & db]"]
             Alloy["Alloy<br/>[log agent]"]
             Loki["Loki<br/>[log db]"]
-            Prometheus["Prometheus<br/>[metrics scraper & db]"]
             Grafana["Grafana<br/>[dashboards]"]
         end
 
@@ -52,16 +53,32 @@ flowchart LR
         end
     end
 
+%% traffic
     Internet --> Caddy
     Caddy -->|forwards to| Gateway
     Gateway -->|routes to| Backends
-    fail2ban -->|tails access logs from| Caddy
-    Alloy -->|tails access logs from| Caddy
-    Alloy -->|tails container logs from| Backends
-    Alloy -->|ships logs to| Loki
-    Grafana -->|queries metrics from| Prometheus
-    Grafana -->|queries logs from| Loki
-    Prometheus -->|scrapes metrics from| Backends
+%% security
+    fail2ban -->|tails access logs| Caddy
+%% observability
+    Alloy -->|tails access logs| Caddy
+    Alloy -->|tails container logs| Backends
+    Alloy -->|ships logs| Loki
+    Grafana -->|queries logs| Loki
+%% metrics
+    Prometheus -->|scrapes metrics| Backends
+    Grafana -->|queries metrics| Prometheus
+%% colors
+    style Public fill: #fff7ed, stroke: #fed7aa
+    style Internal fill: #f0f9ff, stroke: #bae6fd
+    style Core fill: #fff7ed, stroke: #fed7aa
+    style Observability fill: #e0f2fe, stroke: #93c5fd
+    style Security fill: #e0f2fe, stroke: #93c5fd
+%% normal nodes
+    classDef node fill: #bae6fd, stroke: #60a5fa, color: #0f172a
+    class Prometheus,Alloy,Loki,Grafana,fail2ban node
+%% main-flow nodes
+    classDef mainFlow fill: #ffedd5, stroke: #fdba74, color: #7c2d12
+    class Internet,Caddy,Gateway,Backends mainFlow
 ```
 
 ## Components
