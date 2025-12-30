@@ -1,6 +1,6 @@
 services:
   conduit:
-    image: matrixconduit/matrix-conduit:v0.10.10
+    image: matrixconduit/matrix-conduit:v0.10.11
     labels:
       - app=conduit
     restart: unless-stopped
