@@ -26,6 +26,7 @@ scrape_configs:
           - api-stress-test:8083
           - ichiro-walks:8085
           - htmx-demo:8087
+          - wordle-duel-service:8088
 
   - job_name: 'cadvisor'
     scrape_interval: 15s
