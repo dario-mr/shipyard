@@ -15,4 +15,5 @@ services:
       - shortly
       - ichiro-walks
       - htmx-demo
+      - wordle-duel-service
     read_only: true

@@ -80,3 +80,17 @@ services:
       - backend
     labels:
       - app=htmx-demo
+
+  wordle-duel-service:
+    image: dariomr8/wordle-duel-service:latest
+    restart: unless-stopped
+    expose:
+      - "8088"
+    networks:
+      - backend
+    environment:
+      DB_USER: "${DB_USER}"
+      DB_PORT: "${DB_PORT}"
+      DB_PASSWORD: "${DB_PASSWORD}"
+    labels:
+      - app=wordle-duel-service
