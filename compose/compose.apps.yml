@@ -94,3 +94,16 @@ services:
       DB_PASSWORD: "${DB_PASSWORD}"
     labels:
       - app=wordle-duel-service
+
+  wordle-duel:
+    image: dariomr8/wordle-duel:latest
+    restart: unless-stopped
+    expose:
+      - "80"
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:80" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
