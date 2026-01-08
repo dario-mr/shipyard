@@ -35,7 +35,7 @@
 		path /robots.txt /sitemap.xml /manifest.json /site.webmanifest
 		path /apple-touch-icon*.png /.well-known/acme-challenge/*
 		path /.well-known/matrix/client
-		path /api-stress-test/* /ichiro-family-tree/* /shortly/* /ichiro-walks/* /portainer/* /grafana/* /htmx-demo/* /wordle-duel-service/*
+		path /api-stress-test/* /ichiro-family-tree/* /shortly/* /ichiro-walks/* /portainer/* /grafana/* /htmx-demo/* /wordle-duel-service/* /wordle-duel/*
 	}
 
 	# Allowed → rate limit, then route to the right upstream
@@ -51,7 +51,7 @@
 			# App paths (stricter)
 			zone per_ip_app {
 				match {
-					path /api-stress-test/* /ichiro-family-tree/* /shortly/* /ichiro-walks/* /htmx-demo/* /wordle-duel-service/*
+					path /api-stress-test/* /ichiro-family-tree/* /shortly/* /ichiro-walks/* /htmx-demo/* /wordle-duel-service/* /wordle-duel/*
 				}
 				key {remote_host}
 				events 100
