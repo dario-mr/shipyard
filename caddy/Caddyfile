@@ -28,6 +28,14 @@
 		respond `{"m.homeserver":{"base_url":"https://matrix.{$DOMAIN}"}}` 200
 	}
 
+	# Canonicalize app root paths (add trailing slash)
+	@app_roots {
+		path /api-stress-test /ichiro-family-tree /shortly /ichiro-walks /portainer /grafana /htmx-demo /wordle-duel-service /wordle-duel
+	}
+	handle @app_roots {
+		redir {path}/ 308
+	}
+
 	# Allowed paths
 	@allowed {
 		path / /index.html /favicon.ico
