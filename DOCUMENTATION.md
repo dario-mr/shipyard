@@ -145,3 +145,13 @@ docker compose exec fail2ban fail2ban-client banned
 docker compose exec fail2ban fail2ban-client set caddy-429 unbanip 86.49.248.100
 docker compose exec fail2ban fail2ban-client set caddy-unknownpaths unbanip 86.49.248.100
 ```
+
+### Alloy
+
+Validate and format alloy config:
+
+```shell
+# cd observability/alloy
+alloy validate config.alloy
+alloy fmt -w config.alloy
+```
