@@ -92,6 +92,9 @@ services:
       DB_USER: "${DB_USER}"
       DB_PORT: "${DB_PORT}"
       DB_PASSWORD: "${DB_PASSWORD}"
+      WORDLE_GOOGLE_CLIENT_ID: "${WORDLE_GOOGLE_CLIENT_ID}"
+      WORDLE_GOOGLE_CLIENT_SECRET: "${WORDLE_GOOGLE_CLIENT_SECRET}"
+      WORDLE_JWT_SECRET: "${WORDLE_JWT_SECRET}"
     labels:
       - app=wordle-duel-service
 
