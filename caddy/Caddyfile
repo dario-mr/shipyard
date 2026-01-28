@@ -120,7 +120,9 @@ matrix.{$DOMAIN} {
 				window 10s
 			}
 		}
-		reverse_proxy conduit:6167
+		reverse_proxy conduit:6167 {
+			header_down -Content-Security-Policy
+		}
 	}
 
 	# all other Matrix APIs, no rate limit
@@ -129,7 +131,9 @@ matrix.{$DOMAIN} {
 		path / /favicon.ico
 	}
 	handle @matrix_other {
-		reverse_proxy conduit:6167
+		reverse_proxy conduit:6167 {
+			header_down -Content-Security-Policy
+		}
 	}
 
 	# everything else gets dropped before touching Conduit
