@@ -15,7 +15,10 @@
 		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
 		X-Frame-Options "DENY"
 		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
 		-Server
+
+		Permissions-Policy "accelerometer=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), usb=(), web-share=()"
 	}
 
 	# Matrix client discovery
@@ -90,6 +93,7 @@ matrix.{$DOMAIN} {
 		Strict-Transport-Security "max-age=63072000"
 		X-Frame-Options "DENY"
 		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
 		-Server
 	}
 
