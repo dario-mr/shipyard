@@ -15,6 +15,10 @@
 		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
 		X-Frame-Options "DENY"
 		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "accelerometer=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), usb=(), web-share=()"
+		Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.matomo.cloud; connect-src 'self' https://matrix.{$DOMAIN} wss:; upgrade-insecure-requests"
+
 		-Server
 	}
 
@@ -90,6 +94,7 @@ matrix.{$DOMAIN} {
 		Strict-Transport-Security "max-age=63072000"
 		X-Frame-Options "DENY"
 		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
 		-Server
 	}
 
@@ -115,7 +120,9 @@ matrix.{$DOMAIN} {
 				window 10s
 			}
 		}
-		reverse_proxy conduit:6167
+		reverse_proxy conduit:6167 {
+			header_down -Content-Security-Policy
+		}
 	}
 
 	# all other Matrix APIs, no rate limit
@@ -124,7 +131,9 @@ matrix.{$DOMAIN} {
 		path / /favicon.ico
 	}
 	handle @matrix_other {
-		reverse_proxy conduit:6167
+		reverse_proxy conduit:6167 {
+			header_down -Content-Security-Policy
+		}
 	}
 
 	# everything else gets dropped before touching Conduit
