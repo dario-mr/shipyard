@@ -28,6 +28,9 @@ services:
       ENCRYPTION_KEY: "${ENCRYPTION_KEY}"
     labels:
       - app=api-stress-test
+      - metrics_scrape=true
+      - metrics_path=/actuator/prometheus
+      - metrics_port=8083
 
   ichiro-family-tree:
     image: dariomr8/ichiro:latest
@@ -42,6 +45,9 @@ services:
       DB_PASSWORD: "${DB_PASSWORD}"
     labels:
       - app=ichiro-family-tree
+      - metrics_scrape=true
+      - metrics_path=/actuator/prometheus
+      - metrics_port=8081
 
   shortly:
     image: dariomr8/shortly:latest
@@ -56,6 +62,9 @@ services:
       DB_PASSWORD: "${DB_PASSWORD}"
     labels:
       - app=shortly
+      - metrics_scrape=true
+      - metrics_path=/actuator/prometheus
+      - metrics_port=8082
 
   ichiro-walks:
     image: dariomr8/ichiro-walks:latest
@@ -70,6 +79,9 @@ services:
       DB_PASSWORD: "${DB_PASSWORD}"
     labels:
       - app=ichiro-walks
+      - metrics_scrape=true
+      - metrics_path=/actuator/prometheus
+      - metrics_port=8085
 
   htmx-demo:
     image: dariomr8/htmx-demo:latest
@@ -80,6 +92,9 @@ services:
       - backend
     labels:
       - app=htmx-demo
+      - metrics_scrape=true
+      - metrics_path=/actuator/prometheus
+      - metrics_port=8087
 
   wordle-duel-service:
     image: dariomr8/wordle-duel-service:latest
@@ -97,6 +112,9 @@ services:
       WORDLE_JWT_SECRET: "${WORDLE_JWT_SECRET}"
     labels:
       - app=wordle-duel-service
+      - metrics_scrape=true
+      - metrics_path=/actuator/prometheus
+      - metrics_port=8088
 
   wordle-duel:
     image: dariomr8/wordle-duel:latest

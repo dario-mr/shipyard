@@ -17,7 +17,7 @@ docker login docker.io
 
 docker buildx build \
   --platform linux/arm64 \
-  -t docker.io/dariomr8/caddy-with-ratelimit:2.10.0 \
+  -t docker.io/dariomr8/caddy-with-ratelimit:2.10.2 \
   -f caddy/Dockerfile.caddy \
   --push caddy
 ```
