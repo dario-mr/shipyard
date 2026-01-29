@@ -16,17 +16,32 @@ scrape_configs:
       - targets: [ "alloy:9080" ]
 
   - job_name: spring-boot
-    metrics_path: /actuator/prometheus
     scheme: http
-    static_configs:
-      - targets:
-          - gateway:8080
-          - ichiro-family-tree:8081
-          - shortly:8082
-          - api-stress-test:8083
-          - ichiro-walks:8085
-          - htmx-demo:8087
-          - wordle-duel-service:8088
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [ __meta_docker_container_label_metrics_scrape ]
+        regex: true
+        action: keep
+
+      - source_labels: [ __meta_docker_container_label_metrics_path ]
+        regex: (.+)
+        target_label: __metrics_path__
+
+      - source_labels: [ __meta_docker_container_label_com_docker_compose_service, __meta_docker_container_label_metrics_port ]
+        regex: (.+);(.+)
+        replacement: $1:$2
+        target_label: __address__
+
+      - source_labels: [ __meta_docker_container_label_com_docker_compose_service ]
+        target_label: service
+
+      - source_labels: [ __meta_docker_container_label_app ]
+        target_label: app
+
+      - source_labels: [ __address__ ]
+        target_label: instance
 
   - job_name: 'cadvisor'
     scrape_interval: 15s

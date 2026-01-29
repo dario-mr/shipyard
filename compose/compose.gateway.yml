@@ -3,6 +3,9 @@ services:
     image: dariomr8/apigw:latest
     labels:
       - app=apigw
+      - metrics_scrape=true
+      - metrics_path=/actuator/prometheus
+      - metrics_port=8080
     restart: unless-stopped
     networks:
       - backend
