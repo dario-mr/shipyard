@@ -13,6 +13,8 @@ include:
 networks:
   backend:
     driver: bridge
+  wordle_duel_service_internal:
+    internal: true
 
 volumes:
   caddy_data:
@@ -24,3 +26,4 @@ volumes:
   prometheus_data:
   alloy_data:
   conduit-data:
+  wordle_duel_service_redis_data:
