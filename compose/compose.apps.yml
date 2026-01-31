@@ -4,8 +4,7 @@ services:
     restart: unless-stopped
     expose:
       - "80"
-    networks:
-      - backend
+    networks: [ backend ]
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:80" ]
       interval: 30s
@@ -17,8 +16,7 @@ services:
     restart: unless-stopped
     expose:
       - "8083"
-    networks:
-      - backend
+    networks: [ backend ]
     environment:
       DB_USER: "${DB_USER}"
       DB_PORT: "${DB_PORT}"
@@ -37,8 +35,7 @@ services:
     restart: unless-stopped
     expose:
       - "8081"
-    networks:
-      - backend
+    networks: [ backend ]
     environment:
       DB_USER: "${DB_USER}"
       DB_PORT: "${DB_PORT}"
@@ -54,8 +51,7 @@ services:
     restart: unless-stopped
     expose:
       - "8082"
-    networks:
-      - backend
+    networks: [ backend ]
     environment:
       DB_USER: "${DB_USER}"
       DB_PORT: "${DB_PORT}"
@@ -71,8 +67,7 @@ services:
     restart: unless-stopped
     expose:
       - "8085"
-    networks:
-      - backend
+    networks: [ backend ]
     environment:
       DB_USER: "${DB_USER}"
       DB_PORT: "${DB_PORT}"
@@ -88,8 +83,7 @@ services:
     restart: unless-stopped
     expose:
       - "8087"
-    networks:
-      - backend
+    networks: [ backend ]
     labels:
       - app=htmx-demo
       - metrics_scrape=true
@@ -101,28 +95,49 @@ services:
     restart: unless-stopped
     expose:
       - "8088"
-    networks:
-      - backend
+    networks: [ backend, wordle_duel_service_internal ]
+    depends_on:
+      wordle-duel-service-redis:
+        condition: service_healthy
     environment:
+      TZ: ${TIMEZONE}
       DB_USER: "${DB_USER}"
       DB_PORT: "${DB_PORT}"
       DB_PASSWORD: "${DB_PASSWORD}"
       WORDLE_GOOGLE_CLIENT_ID: "${WORDLE_GOOGLE_CLIENT_ID}"
       WORDLE_GOOGLE_CLIENT_SECRET: "${WORDLE_GOOGLE_CLIENT_SECRET}"
       WORDLE_JWT_SECRET: "${WORDLE_JWT_SECRET}"
+      SPRING_SESSION_STORE_TYPE: "redis"
+      SPRING_DATA_REDIS_HOST: "wordle-duel-service-redis"
+      SPRING_DATA_REDIS_PORT: "6379"
     labels:
       - app=wordle-duel-service
       - metrics_scrape=true
       - metrics_path=/actuator/prometheus
       - metrics_port=8088
 
+  wordle-duel-service-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: [ "redis-server", "--appendonly", "yes" ]
+    networks: [ wordle_duel_service_internal ]
+    volumes:
+      - wordle_duel_service_redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    labels:
+      - app=wordle-duel-service
+      - component=redis
+
   wordle-duel:
     image: dariomr8/wordle-duel:latest
     restart: unless-stopped
     expose:
       - "80"
-    networks:
-      - backend
+    networks: [ backend ]
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:80" ]
       interval: 30s
