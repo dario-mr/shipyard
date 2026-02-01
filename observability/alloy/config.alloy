@@ -156,7 +156,7 @@ loki.process "docker_logs" {
 
 	// Plain-text apps
 	stage.match {
-		selector = "{app=~\"geoipupdate|portainer\"}"
+		selector = "{app=~\"geoipupdate|portainer|wordle-duel-service-redis\"}"
 
 		stage.template {
 			source   = "packed"
@@ -488,7 +488,7 @@ loki.process "docker_logs" {
 
 	// All other JSON apps (e.g. spring boot apps)
 	stage.match {
-		selector = "{app!~\"^(caddy|grafana|prometheus|alloy|fail2ban|geoipupdate|portainer|watchtower|node-exporter|cadvisor|conduit|coturn)$\"}"
+		selector = "{app!~\"^(caddy|grafana|prometheus|alloy|fail2ban|geoipupdate|portainer|watchtower|node-exporter|cadvisor|conduit|coturn|wordle-duel-service-redis)$\"}"
 
 		stage.json {
 			expressions = {level = "level", logger = "logger_name", msg = "message", ts = "[\"@timestamp\"]", stack_trace = "stack_trace", trace_id = "traceId"}
