@@ -129,8 +129,7 @@ services:
       timeout: 3s
       retries: 10
     labels:
-      - app=wordle-duel-service
-      - component=redis
+      - app=wordle-duel-service-redis
 
   wordle-duel:
     image: dariomr8/wordle-duel:latest
