@@ -87,7 +87,8 @@ flowchart TD
   that routes to upstream apps.
 - **fail2ban**: tails Caddy logs and bans offenders at firewall level.
 - **Observability**:
-    - **Alloy**: tails Caddy access logs and application logs (from Docker stdout) and ships them to Loki.
+    - **Alloy**: tails Caddy access logs and application logs (from Docker stdout) and ships them to
+      Loki.
     - **Loki**: log database.
     - **Prometheus**: scrapes and stores metrics from Spring Boot apps and infra services.
     - **Grafana**: dashboards for logs (Loki) and metrics (Prometheus), served under `/grafana/`.
@@ -139,7 +140,8 @@ docker compose logs -f caddy
 - Treat these as secrets and do not commit them:
     - `GRAFANA_ADMIN_PASSWORD`
     - `EMAIL_SERVER_PASSWORD`: used for watchtower notifications
-    - `GEOIPUPDATE_ACCOUNT_ID`, `GEOIPUPDATE_LICENSE_KEY`: GeoIP data to enrich access logs, get your free
+    - `GEOIPUPDATE_ACCOUNT_ID`, `GEOIPUPDATE_LICENSE_KEY`: GeoIP data to enrich access logs, get
+      your free
       key at [MaxMind](https://www.maxmind.com/en/geolite2/signup)
     - `CONDUIT_REGISTRATION_TOKEN`, `TURN_SECRET`: only if you enable Matrix
 - App configs:
@@ -161,11 +163,8 @@ up at least:
 - `portainer_data`
 - `conduit-data` (only if you enable Matrix)
 
-## Minimal security notes
+## Kubernetes
 
-This stack is meant to be exposed to the public internet.
-
-- Caddy terminates TLS and applies basic hardening (headers + rate limiting).
-- fail2ban bans abusive IPs based on Caddy logs.
-- You should still review configs, rotate secrets, and keep images updated before running this on a
-  real domain.
+For larger deployments, a Kubernetes version of this stack is available
+at [dockmaster](https://github.com/dario-mr/dockmaster). Shipyard remains a good fit for small,
+single-host setups where Kubernetes would be overkill.
